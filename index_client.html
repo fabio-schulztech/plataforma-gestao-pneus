@@ -60,7 +60,7 @@
             PROFILE_TOKEN: "85616657-2860-4286-b425-dac4edef4265",
             BASE_URL: "https://api.tago.io",      
             AUTO_REFRESH_INTERVAL: 30000,
-            CLIENT_FILTER: "cliente_teste_a", // Valor padrão, será atualizado pelas tags do dashboard
+            CLIENT_FILTER: "default_client", // Valor padrão, será atualizado pelas tags do dashboard
             DASHBOARD_INFO: null
         };
 
@@ -126,7 +126,9 @@
                 
                 // Carregar dados com o filtro atualizado
                 console.log(' CLIENT_FILTER:', CONFIG.CLIENT_FILTER);
-
+                
+                // Carregar dados após detecção do cliente
+                await loadInitialData();
                 
             } catch (error) {
                 console.error('Erro ao obter tags do dashboard:', error);
@@ -1894,12 +1896,7 @@
 
         // --- Initial Data Load and Tab Setup on Page Load ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Fetch all data concurrently
-            await Promise.all([
-                fetchTiresFromBackend(),
-                fetchVehiclesFromBackend(),
-                fetchAllEventsFromBackend()
-            ]);
+            console.log('DOM carregado, aguardando detecção do cliente...');
 
             // Set up tab navigation
             tabButtons.forEach(button => {
@@ -1920,6 +1917,21 @@
             swapTiresButton.disabled = tires.filter(t => t.statusInicial === 'Em Uso').length < 2;
             addEventButton.disabled = false;
         });
+
+        // Função para carregar dados após detecção do cliente
+        async function loadInitialData() {
+            console.log('Carregando dados iniciais com cliente:', CONFIG.CLIENT_FILTER);
+            try {
+                await Promise.all([
+                    fetchTiresFromBackend(),
+                    fetchVehiclesFromBackend(),
+                    fetchAllEventsFromBackend()
+                ]);
+                console.log('Dados iniciais carregados com sucesso');
+            } catch (error) {
+                console.error('Erro ao carregar dados iniciais:', error);
+            }
+        }
     </script>
 </body>
 </html>
