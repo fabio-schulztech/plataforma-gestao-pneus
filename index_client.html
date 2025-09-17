@@ -1,0 +1,1925 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="https://admin.tago.io/dist/custom-widget.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Pneus Schulz Tech</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 from Schulz Tech HTML */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Gray-200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* Gray-400 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Gray-500 */
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-button.active {
+            background-color: #1e3a8a; /* Darker blue/slate for active tab, similar to slate-800 */
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-inter">
+    <script>
+        window.TagoIO.onStart(widget => {
+            console.log(widget);
+            window.widget = widget;
+            if (widget.dashboard) {
+                console.log("ID do Dashboard:", widget.dashboard);
+                getDashboardTags(widget.dashboard);
+             }
+        })
+        
+        const CONFIG = {
+            PROFILE_TOKEN: "85616657-2860-4286-b425-dac4edef4265",
+            BASE_URL: "https://api.tago.io",      
+            AUTO_REFRESH_INTERVAL: 30000,
+            CLIENT_FILTER: "cliente_teste_a", // Valor padrão, será atualizado pelas tags do dashboard
+            DASHBOARD_INFO: null
+        };
+
+        // Utilitários para alertas e funções auxiliares
+        const utils = {
+            showAlert: function(message, type = 'info') {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                // Aqui você pode implementar um sistema de notificações visual se desejar
+            }
+        };
+
+        async function getDashboardTags(dashboardId) {
+            try {
+                const url = `${CONFIG.BASE_URL}/dashboard/${dashboardId}`;
+                const response = await fetch(url, {
+                headers: { 
+                    Authorization: CONFIG.PROFILE_TOKEN,
+                    'Content-Type': 'application/json'
+                }
+                });
+                
+                if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const dashboard = data.result;
+                
+                console.log("Dashboard completo:", dashboard);
+                console.log("Tags do Dashboard:", dashboard.tags);
+                
+                // Armazenar informações do dashboard
+                CONFIG.DASHBOARD_INFO = {
+                id: dashboardId,
+                name: dashboard.name,
+                tags: dashboard.tags || []
+                };
+                
+                // Atualizar filtro de cliente baseado nas tags
+                if (dashboard.tags && dashboard.tags.length > 0) {
+                const clienteTag = dashboard.tags.find(tag => 
+                    tag.key && tag.key.toLowerCase() === 'cliente'
+                );
+                
+                if (clienteTag && clienteTag.value) {
+                    CONFIG.CLIENT_FILTER = clienteTag.value;
+                    console.log("Cliente filtrado automaticamente:", CONFIG.CLIENT_FILTER);
+                    utils.showAlert(`Filtro automático aplicado: Cliente ${CONFIG.CLIENT_FILTER}`, 'info');
+                }
+                
+                // Verificar outras tags úteis
+                const regionTag = dashboard.tags.find(tag => 
+                    tag.key && tag.key.toLowerCase() === 'regiao'
+                );
+                
+                if (regionTag && regionTag.value) {
+                    console.log("Região identificada:", regionTag.value);
+                }
+                }
+                
+                // Atualizar interface com informações do dashboard
+                updateDashboardInfo();
+                
+                // Carregar dados com o filtro atualizado
+                console.log(' CLIENT_FILTER:', CONFIG.CLIENT_FILTER);
+
+                
+            } catch (error) {
+                console.error('Erro ao obter tags do dashboard:', error);
+                utils.showAlert('Erro ao obter configurações do dashboard. Usando configurações padrão.', 'warning');
+                console.log('ERROR CLIENT_FILTER:', CONFIG.CLIENT_FILTER);
+            }
+        }
+
+
+
+        function updateDashboardInfo() {
+            if (CONFIG.DASHBOARD_INFO) {
+                console.log('function updateDashboardInfo CLIENT_FILTER:', CONFIG.CLIENT_FILTER);
+                // Atualizar display do cliente
+                const userIdDisplay = document.getElementById('userIdDisplay');
+                if (userIdDisplay) {
+                    userIdDisplay.textContent = CONFIG.CLIENT_FILTER;
+                }
+            }
+        }
+        window.TagoIO.ready();
+    </script>
+    <div id="app" class="max-w-4xl mx-auto">
+        <!-- Page Title -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 text-center drop-shadow-sm">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-700">
+                Gestão de Pneus
+            </span>
+        </h1>
+
+        <!-- Cliente Display -->
+        <div class="text-center text-gray-700 text-sm mb-4 p-2 bg-blue-100 rounded-lg shadow-sm">
+            Cliente Atual: <span class="font-mono font-bold text-blue-800 break-all" id="userIdDisplay">Carregando...</span>
+        </div>
+
+        <!-- Delete Confirmation Modals (Hidden by default) -->
+        <div id="deleteTireConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Pneu</h3>
+                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este pneu? Esta ação é irreversível e removerá todos os eventos associados.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="cancelDeleteTire" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                        Cancelar
+                    </button>
+                    <button id="confirmDeleteTire" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
+                        Excluir Pneu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteVehicleConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Veículo</h3>
+                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este veículo? Esta ação é irreversível.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="cancelDeleteVehicle" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                        Cancelar
+                    </button>
+                    <button id="confirmDeleteVehicle" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
+                        Excluir Veículo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteEventConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Evento</h3>
+                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este evento? Esta ação é irreversível.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="cancelDeleteEvent" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                        Cancelar
+                    </button>
+                    <button id="confirmDeleteEvent" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
+                        Excluir Evento
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="mainView">
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8 bg-blue-700 p-3 rounded-xl shadow-lg">
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="kpisSection">KPIs</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="swapSection">Rodízio/Permuta</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="vehicleManagementSection">Gestão de Veículos</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="tireManagementSection">Gestão de Pneus</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="vehicleVisualizationSection">Visualização</button>
+            </div>
+
+            <!-- Section: Indicadores-Chave de Desempenho (KPIs) -->
+            <div id="kpisSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6 sm:p-8 text-white text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Indicadores-Chave de Desempenho (KPIs)</h2>
+                    <p class="text-blue-100 text-sm sm:base">Visão geral da sua frota de pneus.</p>
+                </div>
+                <div id="kpisContent" class="p-6 sm:p-8">
+                    <!-- KPIs will be rendered here by JavaScript -->
+                    <div class="text-center text-gray-600">
+                        <svg class="animate-spin inline-block -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Calculando KPIs...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Rodízio/Permutação (Swap) -->
+            <div id="swapSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-indigo-700 p-6 sm:p-8 text-white text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Rodízio/Permutação (Swap)</h2>
+                    <p class="text-indigo-100 text-sm sm:base">Troque a posição de dois pneus rapidamente.</p>
+                </div>
+                <form id="swapTiresForm" class="p-6 sm:p-8 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="tire1ForSwap" class="block text-sm font-medium text-gray-700 mb-1">Pneu 1</label>
+                            <select name="tire1ForSwap" id="tire1ForSwap" required
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
+                                <option value="">Selecione o Pneu 1</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tire2ForSwap" class="block text-sm font-medium text-gray-700 mb-1">Pneu 2</label>
+                            <select name="tire2ForSwap" id="tire2ForSwap" required
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
+                                <option value="">Selecione o Pneu 2</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" id="swapTiresButton" disabled
+                            class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-300 ease-in-out transform hover:-translate-y-1 flex items-center justify-center">
+                            Realizar Permuta
+                        </button>
+                    </div>
+                    <div id="swapMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                </form>
+            </div>
+
+            <!-- Section: Gestão de Veículos (Cadastro e Lista) -->
+            <div id="vehicleManagementSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-700 p-6 sm:p-8 text-white text-center">
+                    <h2 id="vehicleFormTitle" class="text-2xl sm:text-3xl font-bold mb-2">Cadastro de Veículos</h2>
+                    <p id="vehicleFormSubtitle" class="text-blue-100 text-sm sm:base">Registre seus veículos para associar os pneus.</p>
+                </div>
+                <form id="vehicleForm" class="p-6 sm:p-8 space-y-4">
+                    <input type="hidden" id="vehicleIdToEdit">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="placa" class="block text-sm font-medium text-gray-700 mb-1">Placa</label>
+                            <input type="text" name="placa" id="placa" required
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: ABC1234">
+                        </div>
+                        <div>
+                            <label for="modelo" class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                            <input type="text" name="modelo" id="modelo" required
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: Scania R450">
+                        </div>
+                        <div>
+                            <label for="ano" class="block text-sm font-medium text-gray-700 mb-1">Ano</label>
+                            <input type="number" name="ano" id="ano" min="1900" max="2026"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 2022">
+                        </div>
+                        <div>
+                            <label for="eixos" class="block text-sm font-medium text-gray-700 mb-1">Número de Eixos</label>
+                            <input type="number" name="eixos" id="eixos" min="1"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 3">
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" id="submitVehicleButton" disabled
+                            class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:-translate-y-1 flex items-center justify-center">
+                            Cadastrar Veículo
+                        </button>
+                        <button type="button" id="cancelEditVehicleButton"
+                            class="ml-4 px-8 py-3 bg-gray-500 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
+                            Cancelar Edição
+                        </button>
+                    </div>
+                    <div id="vehicleMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                </form>
+                <div class="p-6 sm:p-8 pt-0">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                        Veículos Cadastrados
+                    </h3>
+                    <div id="vehiclesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Vehicles will be rendered here by JavaScript -->
+                        <div class="text-center text-gray-600">Carregando veículos...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area - Gestão de Pneus (Cadastro e Lista) -->
+            <div id="tireManagementSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 sm:p-8 text-white text-center">
+                    <h2 id="tireFormTitle" class="text-2xl sm:text-3xl font-bold mb-2">Cadastro de Novo Pneu</h2>
+                    <p id="tireFormSubtitle" class="text-blue-100 text-sm sm:base">Preencha os detalhes para registrar um novo ativo.</p>
+                </div>
+                <form id="tireForm" class="p-6 sm:p-8 space-y-6">
+                    <input type="hidden" id="tireIdToEdit">
+                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                            Dados Básicos
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="numeroFogo" class="block text-sm font-medium text-gray-700 mb-1">Número de Fogo</label>
+                                <input type="text" name="numeroFogo" id="numeroFogo" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: PNEU00123">
+                            </div>
+                            <div>
+                                <label for="marca" class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                                <input type="text" name="marca" id="marca" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: Michelin">
+                            </div>
+                            <div>
+                                <label for="modelo" class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                                <input type="text" name="modelo" id="modelo" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: X Multiway 3D">
+                            </div>
+                            <div>
+                                <label for="statusInicial" class="block text-sm font-medium text-gray-700 mb-1">Status Inicial</label>
+                                <select name="statusInicial" id="statusInicial"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                    <option value="Em Estoque - Novo">Em Estoque - Novo</option>
+                                    <option value="Em Estoque - Recapado">Em Estoque - Recapado</option>
+                                    <option value="Em Uso">Em Uso</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Especificações Técnicas
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="tipoPneu" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Pneu</label>
+                                <input type="text" name="tipoPneu" id="tipoPneu"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: Radial, Sem Câmara">
+                            </div>
+                            <div>
+                                <label for="medida" class="block text-sm font-medium text-gray-700 mb-1">Medida</label>
+                                <input type="text" name="medida" id="medida" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: 295/80 R22.5">
+                            </div>
+                            <div>
+                                <label for="capacidadeCarga" class="block text-sm font-medium text-gray-700 mb-1">Capacidade de Carga / Índice de Velocidade</label>
+                                <input type="text" name="capacidadeCarga" id="capacidadeCarga"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: 152/148M">
+                            </div>
+                            <div>
+                                <label for="desenhoBanda" class="block text-sm font-medium text-gray-700 mb-1">Desenho da Banda de Rodagem</label>
+                                <input type="text" name="desenhoBanda" id="desenhoBanda"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: Direcional, Misto">
+                            </div>
+                            <div>
+                                <label for="profundidadeSulcoInicial" class="block text-sm font-medium text-gray-700 mb-1">Profundidade Inicial do Sulco (mm)</label>
+                                <input type="number" name="profundidadeSulcoInicial" id="profundidadeSulcoInicial" step="0.1" min="0"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: 16.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 002-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 0a2 2 0 100 4 2 2 0 000-4z" clip-rule="evenodd" />
+                            </svg>
+                            Dados de Aquisição
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="custoAquisicao" class="block text-sm font-medium text-gray-700 mb-1">Custo de Aquisição (R$)</label>
+                                <input type="number" name="custoAquisicao" id="custoAquisicao" step="0.01" min="0" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: 1200.50">
+                            </div>
+                            <div>
+                                <label for="dataAquisicao" class="block text-sm font-medium text-gray-700 mb-1">Data de Aquisição</label>
+                                <input type="date" name="dataAquisicao" id="dataAquisicao" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            </div>
+                            <div>
+                                <label for="fornecedor" class="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
+                                <input type="text" name="fornecedor" id="fornecedor" required
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: Pneus Brasil S.A.">
+                            </div>
+                            <div>
+                                <label for="numeroNF" class="block text-sm font-medium text-gray-700 mb-1">Número da Nota Fiscal</label>
+                                <input type="text" name="numeroNF" id="numeroNF"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    placeholder="Ex: 000123456">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-center">
+                        <button type="submit" id="submitTireButton" disabled
+                            class="px-8 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:-translate-y-1 flex items-center justify-center">
+                            Cadastrar Pneu
+                        </button>
+                        <button type="button" id="cancelEditTireButton"
+                            class="ml-4 px-8 py-3 bg-gray-500 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
+                            Cancelar Edição
+                        </button>
+                    </div>
+
+                    <div id="tireMessage" class="mt-6 p-4 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                </form>
+                <div class="p-6 sm:p-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                            Pneus Cadastrados
+                        </h3>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <input type="text" id="searchTireInput" placeholder="Buscar por Número de Fogo..."
+                            class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                        <button id="searchTireButton"
+                            class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
+                            Buscar
+                        </button>
+                        <button id="clearSearchTireButton"
+                            class="px-6 py-2 bg-gray-400 text-white font-bold rounded-full shadow-lg hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                            Limpar Busca
+                        </button>
+                    </div>
+                    <div id="tiresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Tires will be rendered here by JavaScript -->
+                        <div class="text-center text-gray-600">Carregando pneus...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Visualização de Pneus em Veículos -->
+            <div id="vehicleVisualizationSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
+                <div class="bg-gradient-to-r from-blue-700 to-blue-900 p-6 sm:p-8 text-white text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Visualização de Pneus em Veículos</h2>
+                    <p class="text-blue-200 text-sm sm:base">Veja a distribuição dos pneus na sua frota.</p>
+                </div>
+                <div class="p-6 sm:p-8">
+                    <div class="flex flex-col sm:flex-row gap-2 mb-6">
+                        <select id="selectVehicleForVisualization"
+                            class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            <option value="">Selecione um veículo para visualizar</option>
+                        </select>
+                        <button id="viewVehicleVisualizationButton" disabled
+                            class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
+                            Visualizar
+                        </button>
+                        <button id="clearVehicleSelectionButton" disabled
+                            class="px-6 py-2 bg-gray-400 text-white font-bold rounded-full shadow-lg hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                            Limpar Seleção
+                        </button>
+                    </div>
+                    <div id="vehicleTireVisualization" class="p-6 sm:p-8 text-center text-gray-600 border border-gray-200 rounded-lg bg-gray-50">
+                        Selecione um veículo para visualizar a distribuição dos pneus.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tire Detail View (Hidden by default) -->
+        <div id="tireDetailView" class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 sm:p-8 text-white flex justify-between items-center">
+                <h2 class="text-2xl sm:text-3xl font-bold">Detalhes do Pneu</h2>
+                <button id="backToListViewButton"
+                    class="px-4 py-2 bg-white text-blue-600 rounded-full shadow-md hover:bg-gray-100 transition duration-200 text-sm font-semibold">
+                    Voltar para a Lista
+                </button>
+            </div>
+
+            <div id="tireDetailsContent" class="p-6 sm:p-8 space-y-6">
+                <!-- Tire details will be rendered here by JavaScript -->
+                <div class="text-center text-gray-600">Carregando detalhes do pneu...</div>
+            </div>
+
+            <!-- Add New Event Form -->
+            <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100 mx-6 sm:mx-8 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    Adicionar Novo Evento
+                </h3>
+                <form id="newEventForm" class="space-y-4">
+                    <div>
+                        <label for="eventType" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento</label>
+                        <select name="tipo" id="eventType" required
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            <option value="">Selecione um tipo</option>
+                            <option value="Montagem em Veículo">Montagem em Veículo</option>
+                            <option value="Remoção de Veículo">Remoção de Veículo</option>
+                            <option value="Envio para Recapagem">Envio para Recapagem</option>
+                            <option value="Retorno da Recapagem">Retorno da Recapagem</option>
+                            <option value="Rodízio/Permutação">Rodízio/Permutação</option>
+                            <option value="Registro de Quilometragem e Sulco">Registro de Quilometragem e Sulco</option>
+                            <option value="Calibragem">Calibragem</option>
+                            <option value="Verificação de Sulco">Verificação de Sulco</option>
+                            <option value="Conserto">Conserto</option>
+                            <option value="Descarte (Fim de Vida)">Descarte (Fim de Vida)</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="eventDate" class="block text-sm font-medium text-gray-700 mb-1">Data do Evento</label>
+                        <input type="date" name="data" id="eventDate" required
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+
+                    <!-- Conditional fields for Montagem, Remocao, Rodizio/Permutacao -->
+                    <div id="vehicleEventFields" class="hidden">
+                        <div>
+                            <label for="eventVehicleId" class="block text-sm font-medium text-gray-700 mb-1">Veículo</label>
+                            <select name="detalhes.veiculoId" id="eventVehicleId"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                <option value="">Selecione um veículo</option>
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label for="eventAxle" class="block text-sm font-medium text-gray-700 mb-1">Eixo</label>
+                            <select name="detalhes.eixo" id="eventAxle"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                <option value="">Selecione o Eixo</option>
+                                <option value="Eixo Dianteiro">Eixo Dianteiro</option>
+                                <option value="Eixo 1">Eixo 1</option>
+                                <option value="Eixo 2">Eixo 2</option>
+                                <option value="Eixo 3">Eixo 3</option>
+                                <option value="Eixo 4">Eixo 4</option>
+                                <option value="Eixo 5">Eixo 5</option>
+                                <option value="Eixo Traseiro">Eixo Traseiro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="eventPosition" class="block text-sm font-medium text-gray-700 mb-1">Posição</label>
+                            <select name="detalhes.posicao" id="eventPosition"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                <option value="">Selecione a Posição</option>
+                                <option value="Esquerda Interna">Esquerda Interna</option>
+                                <option value="Esquerda Externa">Esquerda Externa</option>
+                                <option value="Direita Interna">Direita Interna</option>
+                                <option value="Direita Externa">Direita Externa</option>
+                                <option value="Simples Esquerda">Simples Esquerda</option>
+                                <option value="Simples Direita">Simples Direita</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Conditional fields for Recapagem Return -->
+                    <div id="recapEventFields" class="hidden">
+                        <div>
+                            <label for="recapCost" class="block text-sm font-medium text-gray-700 mb-1">Custo da Recapagem (R$)</label>
+                            <input type="number" name="detalhes.custoRecapagem" id="recapCost" step="0.01" min="0"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 350.00">
+                        </div>
+                        <div>
+                            <label for="newSulcoDepth" class="block text-sm font-medium text-gray-700 mb-1">Nova Profundidade do Sulco (mm)</label>
+                            <input type="number" name="detalhes.novaProfundidadeSulco" id="newSulcoDepth" step="0.1" min="0"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 14.0">
+                        </div>
+                    </div>
+
+                    <!-- Conditional fields for Quilometragem e Sulco -->
+                    <div id="mileageSulcoEventFields" class="hidden">
+                        <div>
+                            <label for="mileageVehicle" class="block text-sm font-medium text-gray-700 mb-1">Quilometragem do Veículo (Hodômetro)</label>
+                            <input type="number" name="detalhes.quilometragemVeiculo" id="mileageVehicle" min="0"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 150000">
+                        </div>
+                        <div>
+                            <label for="currentSulcoDepth" class="block text-sm font-medium text-gray-700 mb-1">Profundidade Atual do Sulco (mm)</label>
+                            <input type="number" name="detalhes.profundidadeSulcoAtual" id="currentSulcoDepth" step="0.1" min="0"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: 8.5">
+                        </div>
+                    </div>
+
+                    <!-- Conditional field for Discard -->
+                    <div id="discardEventFields" class="hidden">
+                        <div>
+                            <label for="discardReason" class="block text-sm font-medium text-gray-700 mb-1">Motivo do Descarte</label>
+                            <textarea name="detalhes.motivoDescarte" id="discardReason" rows="2"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                placeholder="Ex: Carcaça condenada, desgaste excessivo, dano lateral"></textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="eventObs" class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                        <textarea name="observacoes" id="eventObs" rows="3"
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                            placeholder="Detalhes adicionais do evento"></textarea>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" id="addEventButton" disabled
+                            class="px-6 py-2 bg-blue-700 text-white font-bold rounded-full shadow-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out transform hover:-translate-y-1 flex items-center justify-center">
+                            Adicionar Evento
+                        </button>
+                    </div>
+                    <div id="eventMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                </form>
+            </div>
+
+            <!-- Tire Events Timeline -->
+            <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100 mx-6 sm:mx-8 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Linha do Tempo de Eventos
+                </h3>
+                <div id="tireEventsTimeline" class="relative border-l-2 border-blue-200 pl-4">
+                    <!-- Events will be rendered here by JavaScript -->
+                    <div class="text-center text-gray-600">Carregando eventos...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-center text-gray-600 text-sm">
+            <!-- Removed previous footer text as requested -->
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables and Constants ---
+        const BACKEND_URL = 'https://api.schulztech.com.br/pneus/api'; // Updated backend URL
+
+        // Simulated User ID (not used by backend for now, just for display)
+        const userId = 'simulated-user-id-123';
+        document.getElementById('userIdDisplay').textContent = userId;
+
+        const axleOptions = ['Eixo Dianteiro', 'Eixo 1', 'Eixo 2', 'Eixo 3', 'Eixo 4', 'Eixo 5', 'Eixo Traseiro'];
+        const positionOptions = ['Esquerda Interna', 'Esquerda Externa', 'Direita Interna', 'Direita Externa', 'Simples Esquerda', 'Simples Direita'];
+
+        // --- Data Arrays (will be populated from backend) ---
+        let tires = [];
+        let vehicles = [];
+        let allTireEvents = [];
+
+        // --- DOM Elements ---
+        const mainView = document.getElementById('mainView');
+        const tireDetailView = document.getElementById('tireDetailView');
+        const backToListViewButton = document.getElementById('backToListViewButton');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const mainSections = document.querySelectorAll('.main-section');
+
+        // Tire Form Elements
+        const tireForm = document.getElementById('tireForm');
+        const tireIdToEditInput = document.getElementById('tireIdToEdit');
+        const numeroFogoInput = document.getElementById('numeroFogo');
+        const marcaInput = document.getElementById('marca');
+        const modeloInput = document.getElementById('modelo');
+        const tipoPneuInput = document.getElementById('tipoPneu');
+        const medidaInput = document.getElementById('medida');
+        const capacidadeCargaInput = document.getElementById('capacidadeCarga');
+        const desenhoBandaInput = document.getElementById('desenhoBanda');
+        const profundidadeSulcoInicialInput = document.getElementById('profundidadeSulcoInicial');
+        const custoAquisicaoInput = document.getElementById('custoAquisicao');
+        const dataAquisicaoInput = document.getElementById('dataAquisicao');
+        const fornecedorInput = document.getElementById('fornecedor');
+        const numeroNFInput = document.getElementById('numeroNF');
+        const statusInicialSelect = document.getElementById('statusInicial');
+        const submitTireButton = document.getElementById('submitTireButton');
+        const cancelEditTireButton = document.getElementById('cancelEditTireButton');
+        const tireMessageDiv = document.getElementById('tireMessage');
+        const tireFormTitle = document.getElementById('tireFormTitle');
+        const tireFormSubtitle = document.getElementById('tireFormSubtitle');
+        const tiresListDiv = document.getElementById('tiresList');
+
+        // Search Elements for Tires
+        const searchTireInput = document.getElementById('searchTireInput');
+        const searchTireButton = document.getElementById('searchTireButton');
+        const clearSearchTireButton = document.getElementById('clearSearchTireButton');
+
+
+        // Vehicle Form Elements
+        const vehicleForm = document.getElementById('vehicleForm');
+        const vehicleIdToEditInput = document.getElementById('vehicleIdToEdit');
+        const placaInput = document.getElementById('placa');
+        const modeloVehicleInput = document.getElementById('modelo');
+        const anoInput = document.getElementById('ano');
+        const eixosInput = document.getElementById('eixos');
+        const submitVehicleButton = document.getElementById('submitVehicleButton');
+        const cancelEditVehicleButton = document.getElementById('cancelEditVehicleButton');
+        const vehicleMessageDiv = document.getElementById('vehicleMessage');
+        const vehicleFormTitle = document.getElementById('vehicleFormTitle');
+        const vehicleFormSubtitle = document.getElementById('vehicleFormSubtitle');
+        const vehiclesListDiv = document.getElementById('vehiclesList');
+
+        // Swap Form Elements
+        const swapTiresForm = document.getElementById('swapTiresForm');
+        const tire1ForSwapSelect = document.getElementById('tire1ForSwap');
+        const tire2ForSwapSelect = document.getElementById('tire2ForSwap');
+        const swapTiresButton = document.getElementById('swapTiresButton');
+        const swapMessageDiv = document.getElementById('swapMessage');
+
+        // New Event Form Elements
+        const newEventForm = document.getElementById('newEventForm');
+        const eventTypeSelect = document.getElementById('eventType');
+        const eventDateInput = document.getElementById('eventDate');
+        const eventObsTextarea = document.getElementById('eventObs');
+        const addEventButton = document.getElementById('addEventButton');
+        const eventMessageDiv = document.getElementById('eventMessage');
+
+        // Conditional Event Fields
+        const vehicleEventFields = document.getElementById('vehicleEventFields');
+        const eventVehicleIdSelect = document.getElementById('eventVehicleId');
+        const eventAxleSelect = document.getElementById('eventAxle');
+        const eventPositionSelect = document.getElementById('eventPosition');
+
+        const recapEventFields = document.getElementById('recapEventFields');
+        const recapCostInput = document.getElementById('recapCost');
+        const newSulcoDepthInput = document.getElementById('newSulcoDepth');
+
+        const mileageSulcoEventFields = document.getElementById('mileageSulcoEventFields');
+        const mileageVehicleInput = document.getElementById('mileageVehicle');
+        const currentSulcoDepthInput = document.getElementById('currentSulcoDepth');
+
+        const discardEventFields = document.getElementById('discardEventFields');
+        const discardReasonTextarea = document.getElementById('discardReason');
+
+        // Modals
+        const deleteTireConfirmModal = document.getElementById('deleteTireConfirmModal');
+        const cancelDeleteTireButton = document.getElementById('cancelDeleteTire');
+        const confirmDeleteTireButton = document.getElementById('confirmDeleteTire');
+
+        const deleteVehicleConfirmModal = document.getElementById('deleteVehicleConfirmModal');
+        const cancelDeleteVehicleButton = document.getElementById('cancelDeleteVehicle');
+        const confirmDeleteVehicleButton = document.getElementById('confirmDeleteVehicle');
+
+        const deleteEventConfirmModal = document.getElementById('deleteEventConfirmModal');
+        const cancelDeleteEventButton = document.getElementById('cancelDeleteEvent');
+        const confirmDeleteEventButton = document.getElementById('confirmDeleteEvent');
+
+        // Vehicle Visualization Elements
+        const selectVehicleForVisualization = document.getElementById('selectVehicleForVisualization');
+        const viewVehicleVisualizationButton = document.getElementById('viewVehicleVisualizationButton');
+        const clearVehicleSelectionButton = document.getElementById('clearVehicleSelectionButton');
+        const vehicleTireVisualizationDiv = document.getElementById('vehicleTireVisualization');
+
+        // --- State Variables for Modals/Editing ---
+        let selectedTireId = null;
+        let tireToDeleteId = null;
+        let vehicleToDeleteId = null;
+        let eventToDeleteId = null;
+
+        // --- Helper Functions ---
+        function showMessage(element, msg, isError = false) {
+            element.textContent = msg;
+            element.classList.remove('hidden');
+            if (isError) {
+                element.classList.remove('bg-blue-100', 'text-blue-800', 'border-blue-200');
+                element.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
+            } else {
+                element.classList.remove('bg-red-100', 'text-red-800', 'border-red-200');
+                element.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-200');
+            }
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+
+        function clearForm(formElement) {
+            formElement.reset();
+            const hiddenInput = formElement.querySelector('input[type="hidden"]');
+            if (hiddenInput) {
+                hiddenInput.value = '';
+            }
+            if (formElement.id === 'tireForm') {
+                numeroFogoInput.disabled = false;
+                submitTireButton.textContent = 'Cadastrar Pneu';
+                cancelEditTireButton.classList.add('hidden');
+                tireFormTitle.textContent = 'Cadastro de Novo Pneu';
+                tireFormSubtitle.textContent = 'Preencha os detalhes para registrar um novo ativo.';
+            } else if (formElement.id === 'vehicleForm') {
+                placaInput.disabled = false;
+                submitVehicleButton.textContent = 'Cadastrar Veículo';
+                cancelEditVehicleButton.classList.add('hidden');
+                vehicleFormTitle.textContent = 'Cadastro de Veículos';
+                vehicleFormSubtitle.textContent = 'Registre seus veículos para associar os pneus.';
+            } else if (formElement.id === 'newEventForm') {
+                eventTypeSelect.value = '';
+                hideAllConditionalEventFields();
+            }
+        }
+
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        function getTireById(id) {
+            return tires.find(t => t.id === id);
+        }
+
+        function getVehicleById(id) {
+            return vehicles.find(v => v.id === id);
+        }
+
+        function getEventsForTire(tireId) {
+            return allTireEvents.filter(event => event.tireId === tireId)
+                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        }
+
+        // --- Section and Tab Management ---
+        function showSection(sectionId) {
+            mainSections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        function activateTab(tabId) {
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                button.classList.remove('bg-blue-900'); // Remove active background
+                button.classList.add('text-blue-100', 'hover:bg-blue-800'); // Add inactive styles
+            });
+            const activeButton = document.querySelector(`[data-section="${tabId}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+                activeButton.classList.add('bg-blue-900'); // Add active background
+                activeButton.classList.remove('text-blue-100', 'hover:bg-blue-800'); // Remove inactive styles
+            }
+        }
+
+        // --- API Interaction Functions ---
+
+        async function fetchTiresFromBackend() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/tires?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                tires = data.map(tire => ({
+                    ...tire,
+                    createdAt: tire.createdAt ? new Date(tire.createdAt) : null,
+                    updatedAt: tire.updatedAt ? new Date(tire.updatedAt) : null,
+                }));
+                renderTires(); // Render all tires by default
+                renderKPIs();
+                // renderVehicleVisualization(); // Removed initial full render
+                populateSwapTireSelects();
+            } catch (error) {
+                console.error('Erro ao buscar pneus do backend:', error);
+                showMessage(tireMessageDiv, 'Erro ao carregar pneus do servidor.', true);
+            }
+        }
+
+        async function createTireInBackend(newTireData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/tires?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTireData),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                const result = await response.json();
+                showMessage(tireMessageDiv, `Pneu cadastrado com sucesso! ID: ${result.id}`);
+                await fetchTiresFromBackend(); // Reload data
+                clearForm(tireForm);
+            } catch (error) {
+                console.error('Erro ao cadastrar pneu no backend:', error);
+                showMessage(tireMessageDiv, `Erro ao cadastrar pneu: ${error.message}`, true);
+            } finally {
+                submitTireButton.disabled = false;
+            }
+        }
+
+        async function updateTireInBackend(tireId, updatedData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/tires/${tireId}?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(tireMessageDiv, `Pneu atualizado com sucesso! ID: ${tireId}`);
+                await fetchTiresFromBackend();
+                clearForm(tireForm);
+            } catch (error) {
+                console.error('Erro ao atualizar pneu no backend:', error);
+                showMessage(tireMessageDiv, `Erro ao atualizar pneu: ${error.message}`, true);
+            } finally {
+                submitTireButton.disabled = false;
+            }
+        }
+
+        async function deleteTireInBackend(tireId) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/tires/${tireId}?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(tireMessageDiv, 'Pneu excluído com sucesso!');
+                await fetchTiresFromBackend();
+                await fetchAllEventsFromBackend(); // Ensure events are also updated
+            } catch (error) {
+                console.error('Erro ao excluir pneu no backend:', error);
+                showMessage(tireMessageDiv, `Erro ao excluir pneu: ${error.message}`, true);
+            }
+        }
+
+        async function fetchVehiclesFromBackend() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/vehicles?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                vehicles = await response.json();
+                renderVehicles();
+                populateEventVehicleSelect();
+                populateVehicleVisualizationSelect(); // Populate the visualization select
+            } catch (error) {
+                console.error('Erro ao buscar veículos do backend:', error);
+                showMessage(vehicleMessageDiv, 'Erro ao carregar veículos do servidor.', true);
+            }
+        }
+
+        async function createVehicleInBackend(newVehicleData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/vehicles?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newVehicleData),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                const result = await response.json();
+                showMessage(vehicleMessageDiv, `Veículo cadastrado com sucesso! ID: ${result.id}`);
+                await fetchVehiclesFromBackend();
+                clearForm(vehicleForm);
+            } catch (error) {
+                console.error('Erro ao cadastrar veículo no backend:', error);
+                showMessage(vehicleMessageDiv, `Erro ao cadastrar veículo: ${error.message}`, true);
+            } finally {
+                submitVehicleButton.disabled = false;
+            }
+        }
+
+        async function updateVehicleInBackend(vehicleId, updatedData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/vehicles/${vehicleId}?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(vehicleMessageDiv, `Veículo atualizado com sucesso! ID: ${vehicleId}`);
+                await fetchVehiclesFromBackend();
+                await fetchTiresFromBackend(); // Update tire locations if vehicle placa changed
+                clearForm(vehicleForm);
+            } catch (error) {
+                console.error('Erro ao atualizar veículo no backend:', error);
+                showMessage(vehicleMessageDiv, `Erro ao atualizar veículo: ${error.message}`, true);
+            } finally {
+                submitVehicleButton.disabled = false;
+            }
+        }
+
+        async function deleteVehicleInBackend(vehicleId) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/vehicles/${vehicleId}?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(vehicleMessageDiv, 'Veículo excluído com sucesso!');
+                await fetchVehiclesFromBackend();
+                await fetchTiresFromBackend(); // Update tire locations
+            } catch (error) {
+                console.error('Erro ao excluir veículo no backend:', error);
+                showMessage(vehicleMessageDiv, `Erro ao excluir veículo: ${error.message}`, true);
+            }
+        }
+
+        async function fetchAllEventsFromBackend() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/events?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allTireEvents = await response.json();
+                // Ensure timestamps are Date objects if needed for sorting/display
+                allTireEvents = allTireEvents.map(event => ({
+                    ...event,
+                    timestamp: event.timestamp ? new Date(event.timestamp) : null
+                }));
+                if (selectedTireId) {
+                    renderTireEvents(selectedTireId); // Re-render if in detail view
+                }
+                renderKPIs(); // KPIs depend on all events
+            } catch (error) {
+                console.error('Erro ao buscar eventos do backend:', error);
+                showMessage(eventMessageDiv, 'Erro ao carregar eventos do servidor.', true);
+            }
+        }
+
+        async function createEventInBackend(newEventData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/events?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newEventData),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(eventMessageDiv, 'Evento adicionado e pneu atualizado com sucesso!');
+                await fetchAllEventsFromBackend(); // Re-fetch all events
+                await fetchTiresFromBackend(); // Re-fetch tires to update status/km
+                clearForm(newEventForm);
+            } catch (error) {
+                console.error('Erro ao adicionar evento no backend:', error);
+                showMessage(eventMessageDiv, `Erro ao adicionar evento: ${error.message}`, true);
+            } finally {
+                addEventButton.disabled = false;
+            }
+        }
+
+        async function deleteEventInBackend(eventId) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/events/${eventId}?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(eventMessageDiv, 'Evento excluído com sucesso!');
+                await fetchAllEventsFromBackend(); // Re-fetch all events
+                await fetchTiresFromBackend(); // Re-fetch tires to update status/km
+            } catch (error) {
+                console.error('Erro ao excluir evento no backend:', error);
+                showMessage(eventMessageDiv, `Erro ao excluir evento: ${error.message}`, true);
+            }
+        }
+
+        async function swapTiresInBackend(tire1Id, tire2Id) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/swap-tires?cliente_id=${encodeURIComponent(CONFIG.CLIENT_FILTER)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tire1Id, tire2Id }),
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, Details: ${errorText}`);
+                }
+                showMessage(swapMessageDiv, 'Permuta de pneus realizada com sucesso!');
+                await fetchTiresFromBackend(); // Reload tires to reflect new positions
+                await fetchAllEventsFromBackend(); // Reload events to show swap events
+                tire1ForSwapSelect.value = '';
+                tire2ForSwapSelect.value = '';
+            } catch (error) {
+                console.error('Erro ao permutar pneus no backend:', error);
+                showMessage(swapMessageDiv, `Erro ao permutar pneus: ${error.message}`, true);
+            } finally {
+                swapTiresButton.disabled = false;
+            }
+        }
+
+        // --- Render Functions ---
+
+        function renderKPIs() {
+            let totalPneus = tires.length;
+            let pneusPorStatus = {
+                'Em Estoque - Novo': 0, 'Em Estoque - Recapado': 0, 'Em Estoque - Usado': 0,
+                'Em Uso': 0, 'Em Recapagem': 0, 'Descartado': 0, 'Outro': 0,
+            };
+            let custoTotalAquisicao = 0;
+            let custoTotalRecapagens = 0;
+            let quilometragemTotalFrota = 0;
+            let totalRecapagens = 0;
+            let pneusRecapadosCount = 0;
+
+            tires.forEach(tire => {
+                pneusPorStatus[tire.statusInicial] = (pneusPorStatus[tire.statusInicial] || 0) + 1;
+                custoTotalAquisicao += parseFloat(tire.custoAquisicao || 0);
+                quilometragemTotalFrota += parseFloat(tire.quilometragemTotalPercorrida || 0);
+
+                if (tire.numeroRecapagens > 0) {
+                    pneusRecapadosCount++;
+                    totalRecapagens += tire.numeroRecapagens;
+                }
+            });
+
+            allTireEvents.forEach(event => {
+                let details = typeof event.detalhes === 'string' ? JSON.parse(event.detalhes) : event.detalhes;
+                if (event.tipo === 'Retorno da Recapagem' && details && details.custoRecapagem) {
+                    custoTotalRecapagens += parseFloat(details.custoRecapagem || 0);
+                }
+            });
+
+            let mediaRecapagensPorPneu = pneusRecapadosCount > 0 ? totalRecapagens / pneusRecapadosCount : 0;
+            let cpk = quilometragemTotalFrota > 0 ? (custoTotalAquisicao + custoTotalRecapagens) / quilometragemTotalFrota : 0;
+
+            const kpisHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">Total de Pneus</p>
+                        <p class="text-2xl font-bold text-blue-900">${totalPneus}</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">Custo Total Aquisição</p>
+                        <p class="text-2xl font-bold text-blue-900">R$ ${custoTotalAquisicao.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">Custo Total Recapagens</p>
+                        <p class="text-2xl font-bold text-blue-900">R$ ${custoTotalRecapagens.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-lg shadow-sm border border-blue-300 col-span-1 md:col-span-2 lg:col-span-3">
+                        <p class="text-sm font-medium text-blue-700 mb-2">Pneus por Status</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-sm">
+                            ${Object.entries(pneusPorStatus).map(([status, count]) => `
+                                <div class="flex flex-col items-center p-2 bg-blue-200 rounded-md">
+                                    <span class="font-semibold text-blue-800">${count}</span>
+                                    <span class="text-blue-700 text-xs text-center leading-tight">${status}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">Quilometragem Total Frota</p>
+                        <p class="text-2xl font-bold text-blue-900">${quilometragemTotalFrota.toFixed(0)} km</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">Média Recapagens/Pneu</p>
+                        <p class="text-2xl font-bold text-blue-900">${mediaRecapagensPorPneu.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium text-blue-700">CPK (Custo/Km)</p>
+                        <p class="text-2xl font-bold text-blue-900">R$ ${cpk.toFixed(4)}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('kpisContent').innerHTML = kpisHtml;
+        }
+
+        function renderTires(tiresToRender = tires) { // Added optional parameter
+            if (tiresToRender.length === 0) {
+                tiresListDiv.innerHTML = `
+                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50 col-span-full">
+                        Nenhum pneu cadastrado ainda ou nenhum resultado encontrado.
+                    </div>
+                `;
+                return;
+            }
+
+            tiresListDiv.innerHTML = tiresToRender.map(tire => {
+                const statusClass = tire.statusInicial === 'Descartado' ? 'text-red-600' :
+                                    tire.statusInicial.includes('Em Uso') ? 'text-blue-600' :
+                                    tire.statusInicial.includes('Em Estoque') ? 'text-blue-600' :
+                                    'text-blue-600';
+                const createdAtDate = tire.createdAt ? new Date(tire.createdAt).toLocaleDateString() : 'N/A';
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col">
+                        <div class="flex-grow cursor-pointer" data-tire-id="${tire.id}">
+                            <h4 class="font-bold text-lg text-blue-700 mb-1">${tire.numeroFogo}</h4>
+                            <p class="text-gray-800 text-sm">Marca: <span class="font-medium">${tire.marca}</span></p>
+                            <p class="text-gray-800 text-sm">Modelo: <span class="font-medium">${tire.modelo}</span></p>
+                            <p class="text-gray-800 text-sm">Medida: <span class="font-medium">${tire.medida}</span></p>
+                            <p class="text-gray-800 text-sm">Status: <span class="font-medium ${statusClass}">${tire.statusInicial}</span></p>
+                            ${tire.currentVehiclePlaca ? `<p class="text-gray-800 text-sm">Localização: <span class="font-medium">${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition}</span></p>` : ''}
+                            <p class="text-gray-800 text-sm">KM Total: <span class="font-medium">${parseFloat(tire.quilometragemTotalPercorrida || 0).toFixed(0)} km</span></p>
+                            <p class="text-gray-600 text-xs mt-2">Adicionado em: ${createdAtDate}</p>
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button data-action="edit" data-tire-id="${tire.id}"
+                                class="px-3 py-1 bg-blue-400 text-white rounded-full text-sm hover:bg-blue-500 transition duration-200">
+                                Editar
+                            </button>
+                            <button data-action="delete" data-tire-id="${tire.id}"
+                                class="px-3 py-1 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 transition duration-200">
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners for view, edit, delete buttons
+            tiresListDiv.querySelectorAll('[data-tire-id]').forEach(element => {
+                if (element.tagName === 'DIV') { // Click on card to view details
+                    element.addEventListener('click', (e) => {
+                        // Prevent click on card if it's a button click
+                        if (e.target.tagName === 'BUTTON') return;
+                        selectedTireId = element.dataset.tireId;
+                        renderTireDetails();
+                        mainView.classList.add('hidden');
+                        tireDetailView.classList.remove('hidden');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                } else if (element.tagName === 'BUTTON') {
+                    const action = element.dataset.action;
+                    if (action === 'edit') {
+                        element.addEventListener('click', () => editTire(element.dataset.tireId));
+                    } else if (action === 'delete') {
+                        element.addEventListener('click', () => confirmDeleteTire(element.dataset.tireId));
+                    }
+                }
+            });
+        }
+
+        function renderVehicles() {
+            if (vehicles.length === 0) {
+                vehiclesListDiv.innerHTML = `
+                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50 col-span-full">
+                        Nenhum veículo cadastrado ainda.
+                    </div>
+                `;
+                return;
+            }
+
+            vehiclesListDiv.innerHTML = vehicles.map(vehicle => `
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-3 flex flex-col">
+                    <div class="flex-grow">
+                        <p class="font-bold text-gray-900">${vehicle.placa}</p>
+                        <p class="text-sm text-gray-700">${vehicle.modelo} (${vehicle.ano}) - ${vehicle.eixos} Eixos</p>
+                    </div>
+                    <div class="mt-2 flex justify-end space-x-2">
+                        <button data-action="edit" data-vehicle-id="${vehicle.id}"
+                            class="px-3 py-1 bg-blue-400 text-white rounded-full text-sm hover:bg-blue-500 transition duration-200">
+                            Editar
+                        </button>
+                        <button data-action="delete" data-vehicle-id="${vehicle.id}"
+                            class="px-3 py-1 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 transition duration-200">
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            vehiclesListDiv.querySelectorAll('button[data-vehicle-id]').forEach(button => {
+                const action = button.dataset.action;
+                if (action === 'edit') {
+                    button.addEventListener('click', () => editVehicle(button.dataset.vehicleId));
+                } else if (action === 'delete') {
+                    button.addEventListener('click', () => confirmDeleteVehicle(button.dataset.vehicleId));
+                }
+            });
+        }
+
+        function renderTireDetails() {
+            const tire = getTireById(selectedTireId);
+            if (!tire) {
+                document.getElementById('tireDetailsContent').innerHTML = `
+                    <div class="text-center text-gray-600 p-8">Pneu não encontrado ou erro ao carregar.</div>
+                `;
+                return;
+            }
+
+            const statusClass = tire.statusInicial === 'Descartado' ? 'text-red-600' :
+                                tire.statusInicial.includes('Em Uso') ? 'text-blue-600' :
+                                tire.statusInicial.includes('Em Estoque') ? 'text-blue-600' :
+                                'text-blue-600';
+
+            document.getElementById('tireDetailsContent').innerHTML = `
+                <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm-3 9a1 1 0 11-2 0 1 1 0 012 0zm5-1a1 1 0 100-2 1 1 0 000 2zm-2 4a1 1 0 11-2 0 1 1 0 012 0z" />
+                        </svg>
+                        Informações do Pneu: <span class="text-blue-700 ml-2">${tire.numeroFogo}</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <p><span class="font-medium">Marca:</span> ${tire.marca}</p>
+                        <p><span class="font-medium">Modelo:</span> ${tire.modelo}</p>
+                        <p><span class="font-medium">Medida:</span> ${tire.medida}</p>
+                        <p><span class="font-medium">Tipo:</span> ${tire.tipoPneu || 'N/A'}</p>
+                        <p><span class="font-medium">Capacidade Carga:</span> ${tire.capacidadeCarga || 'N/A'}</p>
+                        <p><span class="font-medium">Desenho Banda:</span> ${tire.desenhoBanda || 'N/A'}</p>
+                        <p><span class="font-medium">Profundidade Inicial:</span> ${tire.profundidadeSulcoInicial} mm</p>
+                        <p><span class="font-medium">Custo Aquisição:</span> R$ ${parseFloat(tire.custoAquisicao).toFixed(2)}</p>
+                        <p><span class="font-medium">Data Aquisição:</span> ${tire.dataAquisicao}</p>
+                        <p><span class="font-medium">Fornecedor:</span> ${tire.fornecedor}</p>
+                        <p><span class="font-medium">Número NF:</span> ${tire.numeroNF || 'N/A'}</p>
+                        <p><span class="font-medium">Status Atual:</span> <span class="font-bold ${statusClass}">${tire.statusInicial}</span></p>
+                        <p><span class="font-medium">Nº Recapagens:</span> ${tire.numeroRecapagens}</p>
+                        <p><span class="font-medium">KM Total Percorrida:</span> ${parseFloat(tire.quilometragemTotalPercorrida || 0).toFixed(0)} km</p>
+                        <p><span class="font-medium">Última Leitura Hodômetro:</span> ${parseFloat(tire.ultimaLeituraHodometroRegistrada || 0).toFixed(0)} km</p>
+                        <p><span class="font-medium">Profundidade Sulco Atual:</span> ${tire.profundidadeSulcoAtual || 'N/A'} mm</p>
+                        ${tire.currentVehiclePlaca ? `<p class="col-span-2"><span class="font-medium">Localização Atual:</span> ${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            renderTireEvents(tire.id);
+            populateEventVehicleSelect();
+        }
+
+        function renderTireEvents(tireId) {
+            const events = getEventsForTire(tireId);
+            const tireEventsTimelineDiv = document.getElementById('tireEventsTimeline');
+
+            if (events.length === 0) {
+                tireEventsTimelineDiv.innerHTML = `
+                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        Nenhum evento registrado para este pneu ainda.
+                    </div>
+                `;
+                return;
+            }
+
+            tireEventsTimelineDiv.innerHTML = events.map(event => {
+                const eventDate = new Date(event.timestamp);
+                const formattedDate = eventDate.toLocaleDateString('pt-BR');
+                const formattedTime = eventDate.toLocaleTimeString('pt-BR');
+
+                let detailsHtml = '';
+                if (event.detalhes) {
+                    // Parse JSON string if it's stored as string (MySQL JSON type might return string)
+                    let details = typeof event.detalhes === 'string' ? JSON.parse(event.detalhes) : event.detalhes;
+
+                    if (event.tipo === 'Retorno da Recapagem') {
+                        detailsHtml = `
+                            <div class="text-sm text-gray-600 mt-1 ml-2">
+                                <p>Custo: R$ ${parseFloat(details.custoRecapagem).toFixed(2)}</p>
+                                <p>Nova Profundidade Sulco: ${details.novaProfundidadeSulco} mm</p>
+                            </div>
+                        `;
+                    } else if (event.tipo === 'Descarte (Fim de Vida)') {
+                        detailsHtml = `
+                            <div class="text-sm text-gray-600 mt-1 ml-2">
+                                <p>Motivo: ${details.motivoDescarte}</p>
+                            </div>
+                        `;
+                    } else if (event.tipo === 'Registro de Quilometragem e Sulco') {
+                        detailsHtml = `
+                            <div class="text-sm text-gray-600 mt-1 ml-2">
+                                <p>Hodômetro Veículo: ${parseFloat(details.quilometragemVeiculo).toFixed(0)} km</p>
+                                <p>Profundidade Sulco: ${details.profundidadeSulcoAtual} mm</p>
+                            </div>
+                        `;
+                    } else if (['Montagem em Veículo', 'Remoção de Veículo', 'Rodízio/Permutação', 'Rodízio/Permutação (Swap)'].includes(event.tipo)) {
+                        detailsHtml = `
+                            <div class="text-sm text-gray-600 mt-1 ml-2">
+                                <p>Veículo: ${details.veiculoPlaca || 'N/A'}</p>
+                                <p>Eixo: ${details.eixo || 'N/A'}</p>
+                                <p>Posição: ${details.posicao || 'N/A'}</p>
+                                ${details.pneuPermutadoNumeroFogo ? `<p>Permutado com: ${details.pneuPermutadoNumeroFogo}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div class="mb-6 last:mb-0">
+                        <div class="absolute w-3 h-3 bg-blue-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                        <p class="text-xs text-gray-500">${formattedDate} - ${formattedTime}</p>
+                        <h4 class="font-semibold text-gray-900 text-base mt-0.5">${event.tipo}</h4>
+                        ${event.observacoes ? `<p class="text-gray-700 text-sm mt-1">${event.observacoes}</p>` : ''}
+                        ${detailsHtml}
+                        <div class="mt-2 flex justify-end">
+                            <button data-event-id="${event.id}" data-action="delete"
+                                class="px-3 py-1 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition duration-200">
+                                Excluir Evento
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            tireEventsTimelineDiv.querySelectorAll('button[data-event-id]').forEach(button => {
+                button.addEventListener('click', () => confirmDeleteEvent(button.dataset.eventId));
+            });
+        }
+
+        function renderVehicleVisualization(selectedVehicleId = null) {
+            let vehiclesToRender = vehicles;
+            if (selectedVehicleId) {
+                const vehicle = vehicles.find(v => v.id === selectedVehicleId);
+                if (vehicle) {
+                    vehiclesToRender = [vehicle];
+                } else {
+                    vehiclesToRender = []; // Vehicle not found
+                }
+            }
+
+            if (vehiclesToRender.length === 0) {
+                vehicleTireVisualizationDiv.innerHTML = `
+                    <div class="text-center text-gray-600 p-4">
+                        ${selectedVehicleId ? 'Veículo não encontrado ou sem pneus associados.' : 'Selecione um veículo para visualizar a distribuição dos pneus.'}
+                    </div>
+                `;
+                return;
+            }
+
+            vehicleTireVisualizationDiv.innerHTML = vehiclesToRender.map(vehicle => {
+                const tiresOnVehicle = tires.filter(t => t.currentVehicleId === vehicle.id);
+                const axlesHtml = axleOptions.map(axle => {
+                    const tiresOnAxle = tiresOnVehicle.filter(t => t.currentAxle === axle);
+                    // Only render axle card if there are tires on it or it's a known axle type
+                    if (tiresOnAxle.length === 0 && !axleOptions.includes(axle)) return '';
+
+                    const positionsHtml = positionOptions.map(position => {
+                        const tireAtPosition = tiresOnAxle.find(t => t.currentPosition === position);
+                        return `
+                            <li class="flex items-center">
+                                <span class="w-2 h-2 rounded-full mr-2 ${tireAtPosition ? 'bg-blue-600' : 'bg-gray-400'}"></span>
+                                ${position}: ${tireAtPosition ? `<span class="font-medium text-blue-700">${tireAtPosition.numeroFogo}</span>` : `<span class="text-gray-500">Vazio</span>`}
+                            </li>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="bg-gray-200 p-3 rounded-lg shadow-sm border border-blue-400">
+                            <p class="font-semibold text-gray-800 mb-2">${axle}</p>
+                            <ul class="list-none space-y-1">
+                                ${positionsHtml}
+                            </ul>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-gray-100 p-5 rounded-xl shadow-md border border-blue-300 mb-8">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4">
+                            Veículo: ${vehicle.placa} - ${vehicle.modelo} (${vehicle.ano})
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${axlesHtml}
+                        </div>
+                        ${tiresOnVehicle.length === 0 ? `<p class="text-center text-gray-700 mt-4">Nenhum pneu montado neste veículo.</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateSwapTireSelects() {
+            const inUseTires = tires.filter(t => t.statusInicial === 'Em Uso');
+            const optionsHtml = `<option value="">Selecione o Pneu</option>` + inUseTires.map(tire => `
+                <option value="${tire.id}">${tire.numeroFogo} (${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition})</option>
+            `).join('');
+
+            tire1ForSwapSelect.innerHTML = optionsHtml;
+            tire2ForSwapSelect.innerHTML = optionsHtml;
+
+            // Enable/disable swap button based on available tires
+            swapTiresButton.disabled = inUseTires.length < 2;
+        }
+
+        function populateEventVehicleSelect() {
+            const optionsHtml = `<option value="">Selecione um veículo</option>` + vehicles.map(vehicle => `
+                <option value="${vehicle.id}">${vehicle.placa} - ${vehicle.modelo}</option>
+            `).join('');
+            eventVehicleIdSelect.innerHTML = optionsHtml;
+        }
+
+        function populateVehicleVisualizationSelect() {
+            const optionsHtml = `<option value="">Selecione um veículo para visualizar</option>` + vehicles.map(vehicle => `
+                <option value="${vehicle.id}">${vehicle.placa} - ${vehicle.modelo}</option>
+            `).join('');
+            selectVehicleForVisualization.innerHTML = optionsHtml;
+            // Enable/disable view button based on selection
+            viewVehicleVisualizationButton.disabled = !selectVehicleForVisualization.value;
+            clearVehicleSelectionButton.disabled = !selectVehicleForVisualization.value;
+        }
+
+        // --- Event Handlers ---
+
+        // Tire Form Submission
+        tireForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitTireButton.disabled = true;
+            tireMessageDiv.classList.add('hidden');
+
+            const tireId = tireIdToEditInput.value;
+            const isEditing = !!tireId;
+
+            const tireData = {
+                id: tireId || generateUniqueId(), // Generate ID only for new tires
+                numeroFogo: numeroFogoInput.value,
+                marca: marcaInput.value,
+                modelo: modeloInput.value,
+                tipoPneu: tipoPneuInput.value,
+                medida: medidaInput.value,
+                capacidadeCarga: capacidadeCargaInput.value,
+                desenhoBanda: desenhoBandaInput.value,
+                profundidadeSulcoInicial: parseFloat(profundidadeSulcoInicialInput.value),
+                custoAquisicao: parseFloat(custoAquisicaoInput.value),
+                dataAquisicao: dataAquisicaoInput.value,
+                fornecedor: fornecedorInput.value,
+                numeroNF: numeroNFInput.value,
+                statusInicial: statusInicialSelect.value,
+                // These will be initialized/updated by backend or events
+                numeroRecapagens: 0,
+                quilometragemTotalPercorrida: 0,
+                ultimaLeituraHodometroRegistrada: 0,
+                profundidadeSulcoAtual: parseFloat(profundidadeSulcoInicialInput.value),
+                currentVehicleId: null,
+                currentVehiclePlaca: null,
+                currentAxle: null,
+                currentPosition: null,
+            };
+
+            if (isEditing) {
+                await updateTireInBackend(tireData.id, tireData);
+            } else {
+                await createTireInBackend(tireData);
+            }
+        });
+
+        // Edit Tire
+        function editTire(id) {
+            const tire = getTireById(id);
+            if (tire) {
+                tireIdToEditInput.value = tire.id;
+                numeroFogoInput.value = tire.numeroFogo;
+                numeroFogoInput.disabled = true;
+                marcaInput.value = tire.marca;
+                modeloInput.value = tire.modelo;
+                tipoPneuInput.value = tire.tipoPneu || '';
+                medidaInput.value = tire.medida;
+                capacidadeCargaInput.value = tire.capacidadeCarga || '';
+                desenhoBandaInput.value = tire.desenhoBanda || '';
+                profundidadeSulcoInicialInput.value = tire.profundidadeSulcoInicial;
+                custoAquisicaoInput.value = tire.custoAquisicao;
+                dataAquisicaoInput.value = tire.dataAquisicao;
+                fornecedorInput.value = tire.fornecedor;
+                numeroNFInput.value = tire.numeroNF || '';
+                statusInicialSelect.value = tire.statusInicial;
+
+                submitTireButton.textContent = 'Atualizar Pneu';
+                cancelEditTireButton.classList.remove('hidden');
+                tireFormTitle.textContent = 'Editar Pneu Existente';
+                tireFormSubtitle.textContent = 'Altere os detalhes do pneu selecionado.';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Cancel Edit Tire
+        cancelEditTireButton.addEventListener('click', () => {
+            clearForm(tireForm);
+            tireMessageDiv.classList.add('hidden');
+        });
+
+        // Confirm Delete Tire
+        function confirmDeleteTire(id) {
+            tireToDeleteId = id;
+            deleteTireConfirmModal.classList.remove('hidden');
+        }
+
+        cancelDeleteTireButton.addEventListener('click', () => {
+            deleteTireConfirmModal.classList.add('hidden');
+            tireToDeleteId = null;
+        });
+
+        confirmDeleteTireButton.addEventListener('click', async () => {
+            deleteTireConfirmModal.classList.add('hidden');
+            if (tireToDeleteId) {
+                await deleteTireInBackend(tireToDeleteId);
+                tireToDeleteId = null;
+            }
+        });
+
+        // Vehicle Form Submission
+        vehicleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitVehicleButton.disabled = true;
+            vehicleMessageDiv.classList.add('hidden');
+
+            const vehicleId = vehicleIdToEditInput.value;
+            const isEditing = !!vehicleId;
+
+            const vehicleData = {
+                id: vehicleId || generateUniqueId(),
+                placa: placaInput.value,
+                modelo: modeloVehicleInput.value,
+                ano: anoInput.value,
+                eixos: eixosInput.value,
+            };
+
+            if (isEditing) {
+                await updateVehicleInBackend(vehicleData.id, vehicleData);
+            } else {
+                await createVehicleInBackend(vehicleData);
+            }
+        });
+
+        // Edit Vehicle
+        function editVehicle(id) {
+            const vehicle = getVehicleById(id);
+            if (vehicle) {
+                vehicleIdToEditInput.value = vehicle.id;
+                placaInput.value = vehicle.placa;
+                placaInput.disabled = true;
+                modeloVehicleInput.value = vehicle.modelo;
+                anoInput.value = vehicle.ano;
+                eixosInput.value = vehicle.eixos;
+
+                submitVehicleButton.textContent = 'Atualizar Veículo';
+                cancelEditVehicleButton.classList.remove('hidden');
+                vehicleFormTitle.textContent = 'Editar Veículo Existente';
+                vehicleFormSubtitle.textContent = 'Altere os detalhes do veículo selecionado.';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Cancel Edit Vehicle
+        cancelEditVehicleButton.addEventListener('click', () => {
+            clearForm(vehicleForm);
+            vehicleMessageDiv.classList.add('hidden');
+        });
+
+        // Confirm Delete Vehicle
+        function confirmDeleteVehicle(id) {
+            vehicleToDeleteId = id;
+            deleteVehicleConfirmModal.classList.remove('hidden');
+        }
+
+        cancelDeleteVehicleButton.addEventListener('click', () => {
+            deleteVehicleConfirmModal.classList.add('hidden');
+            vehicleToDeleteId = null;
+        });
+
+        confirmDeleteVehicleButton.addEventListener('click', async () => {
+            deleteVehicleConfirmModal.classList.add('hidden');
+            if (vehicleToDeleteId) {
+                await deleteVehicleInBackend(vehicleToDeleteId);
+                vehicleToDeleteId = null;
+            }
+        });
+
+        // Swap Tires Form Submission
+        swapTiresForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            swapTiresButton.disabled = true;
+            swapMessageDiv.classList.add('hidden');
+
+            const tire1Id = tire1ForSwapSelect.value;
+            const tire2Id = tire2ForSwapSelect.value;
+
+            if (!tire1Id || !tire2Id) {
+                showMessage(swapMessageDiv, 'Por favor, selecione ambos os pneus para a permuta.', true);
+                swapTiresButton.disabled = false;
+                return;
+            }
+
+            if (tire1Id === tire2Id) {
+                showMessage(swapMessageDiv, 'Por favor, selecione dois pneus diferentes para a permuta.', true);
+                swapTiresButton.disabled = false;
+                return;
+            }
+
+            await swapTiresInBackend(tire1Id, tire2Id);
+        });
+
+        // Event Type Change Listener (for conditional fields)
+        eventTypeSelect.addEventListener('change', () => {
+            hideAllConditionalEventFields();
+            const selectedType = eventTypeSelect.value;
+            if (['Montagem em Veículo', 'Remoção de Veículo', 'Rodízio/Permutação'].includes(selectedType)) {
+                vehicleEventFields.classList.remove('hidden');
+                eventVehicleIdSelect.required = true;
+                eventAxleSelect.required = true;
+                eventPositionSelect.required = true;
+            } else if (selectedType === 'Retorno da Recapagem') {
+                recapEventFields.classList.remove('hidden');
+                recapCostInput.required = true;
+                newSulcoDepthInput.required = true;
+            } else if (selectedType === 'Registro de Quilometragem e Sulco') {
+                mileageSulcoEventFields.classList.remove('hidden');
+                mileageVehicleInput.required = true;
+                currentSulcoDepthInput.required = true;
+            } else if (selectedType === 'Descarte (Fim de Vida)') {
+                discardEventFields.classList.remove('hidden');
+                discardReasonTextarea.required = true;
+            }
+        });
+
+        function hideAllConditionalEventFields() {
+            vehicleEventFields.classList.add('hidden');
+            eventVehicleIdSelect.required = false;
+            eventAxleSelect.required = false;
+            eventPositionSelect.required = false;
+
+            recapEventFields.classList.add('hidden');
+            recapCostInput.required = false;
+            newSulcoDepthInput.required = false;
+
+            mileageSulcoEventFields.classList.add('hidden');
+            mileageVehicleInput.required = false;
+            currentSulcoDepthInput.required = false;
+
+            discardEventFields.classList.add('hidden');
+            discardReasonTextarea.required = false;
+        }
+
+        // New Event Form Submission
+        newEventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            addEventButton.disabled = true;
+            eventMessageDiv.classList.add('hidden');
+
+            const tire = getTireById(selectedTireId);
+            if (!tire) {
+                showMessage(eventMessageDiv, 'Erro: Pneu não encontrado para adicionar evento.', true);
+                addEventButton.disabled = false;
+                return;
+            }
+
+            const newEventData = {
+                id: generateUniqueId(),
+                tireId: selectedTireId,
+                tipo: eventTypeSelect.value,
+                data: eventDateInput.value,
+                observacoes: eventObsTextarea.value,
+                timestamp: new Date().toISOString(),
+                detalhes: {}
+            };
+
+            if (['Montagem em Veículo', 'Remoção de Veículo', 'Rodízio/Permutação'].includes(newEventData.tipo)) {
+                const selectedVehicle = getVehicleById(eventVehicleIdSelect.value);
+                if (selectedVehicle) {
+                    newEventData.detalhes.veiculoId = selectedVehicle.id;
+                    newEventData.detalhes.veiculoPlaca = selectedVehicle.placa;
+                }
+                newEventData.detalhes.eixo = eventAxleSelect.value;
+                newEventData.detalhes.posicao = eventPositionSelect.value;
+            } else if (newEventData.tipo === 'Retorno da Recapagem') {
+                newEventData.detalhes.custoRecapagem = parseFloat(recapCostInput.value);
+                newEventData.detalhes.novaProfundidadeSulco = parseFloat(newSulcoDepthInput.value);
+            } else if (newEventData.tipo === 'Registro de Quilometragem e Sulco') {
+                newEventData.detalhes.quilometragemVeiculo = parseFloat(mileageVehicleInput.value);
+                newEventData.detalhes.profundidadeSulcoAtual = parseFloat(currentSulcoDepthInput.value);
+            } else if (newEventData.tipo === 'Descarte (Fim de Vida)') {
+                newEventData.detalhes.motivoDescarte = discardReasonTextarea.value;
+            }
+
+            await createEventInBackend(newEventData);
+        });
+
+        // Confirm Delete Event
+        function confirmDeleteEvent(id) {
+            eventToDeleteId = id;
+            deleteEventConfirmModal.classList.remove('hidden');
+        }
+
+        cancelDeleteEventButton.addEventListener('click', () => {
+            deleteEventConfirmModal.classList.add('hidden');
+            eventToDeleteId = null;
+        });
+
+        confirmDeleteEventButton.addEventListener('click', async () => {
+            deleteEventConfirmModal.classList.add('hidden');
+            if (eventToDeleteId) {
+                await deleteEventInBackend(eventToDeleteId);
+                eventToDeleteId = null;
+            }
+        });
+
+        // Back to List View
+        backToListViewButton.addEventListener('click', () => {
+            selectedTireId = null;
+            tireDetailView.classList.add('hidden');
+            mainView.classList.remove('hidden');
+            // When returning from detail view, go to 'Gestão de Pneus' tab
+            showSection('tireManagementSection');
+            activateTab('tireManagementSection');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // --- Search Functionality ---
+        searchTireButton.addEventListener('click', () => {
+            const searchTerm = searchTireInput.value.trim().toLowerCase();
+            if (searchTerm) {
+                const filteredTires = tires.filter(tire =>
+                    tire.numeroFogo.toLowerCase().includes(searchTerm)
+                );
+                renderTires(filteredTires);
+            } else {
+                renderTires(); // Show all tires if search term is empty
+            }
+        });
+
+        clearSearchTireButton.addEventListener('click', () => {
+            searchTireInput.value = '';
+            renderTires(); // Show all tires
+        });
+
+        // --- Vehicle Visualization Select and Buttons ---
+        selectVehicleForVisualization.addEventListener('change', () => {
+            viewVehicleVisualizationButton.disabled = !selectVehicleForVisualization.value;
+            clearVehicleSelectionButton.disabled = !selectVehicleForVisualization.value;
+        });
+
+        viewVehicleVisualizationButton.addEventListener('click', () => {
+            const selectedVehicleId = selectVehicleForVisualization.value;
+            if (selectedVehicleId) {
+                renderVehicleVisualization(selectedVehicleId);
+            } else {
+                vehicleTireVisualizationDiv.innerHTML = `
+                    <div class="text-center text-gray-600 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
+                `;
+            }
+        });
+
+        clearVehicleSelectionButton.addEventListener('click', () => {
+            selectVehicleForVisualization.value = '';
+            viewVehicleVisualizationButton.disabled = true;
+            clearVehicleSelectionButton.disabled = true;
+            vehicleTireVisualizationDiv.innerHTML = `
+                <div class="text-center text-gray-600 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
+            `;
+        });
+
+
+        // --- Initial Data Load and Tab Setup on Page Load ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Fetch all data concurrently
+            await Promise.all([
+                fetchTiresFromBackend(),
+                fetchVehiclesFromBackend(),
+                fetchAllEventsFromBackend()
+            ]);
+
+            // Set up tab navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sectionId = button.dataset.section;
+                    showSection(sectionId);
+                    activateTab(sectionId);
+                });
+            });
+
+            // Show the default section (e.g., Tire Management) and activate its tab
+            showSection('tireManagementSection');
+            activateTab('tireManagementSection');
+
+            // Enable buttons after initial load
+            submitTireButton.disabled = false;
+            submitVehicleButton.disabled = false;
+            swapTiresButton.disabled = tires.filter(t => t.statusInicial === 'Em Uso').length < 2;
+            addEventButton.disabled = false;
+        });
+    </script>
+</body>
+</html>
