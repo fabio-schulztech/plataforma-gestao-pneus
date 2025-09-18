@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 from Schulz Tech HTML */
+            background-color: transparent; /* Transparent to show TagoIO background */
         }
         /* Custom scrollbar for better aesthetics */
         ::-webkit-scrollbar {
@@ -20,15 +20,15 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #e2e8f0; /* Gray-200 */
+            background: #374151; /* Gray-700 for dark theme */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #94a3b8; /* Gray-400 */
+            background: #6b7280; /* Gray-500 for dark theme */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; /* Gray-500 */
+            background: #9ca3af; /* Gray-400 for dark theme */
         }
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
@@ -38,14 +38,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .tab-button.active {
-            background-color: #1e3a8a; /* Darker blue/slate for active tab, similar to slate-800 */
+            background-color: #3b82f6; /* Blue-500 for active tab in dark theme */
             color: white;
-            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
             transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-inter">
+<body class="min-h-screen bg-transparent p-4 sm:p-6 lg:p-8 font-inter">
     <script>
         window.TagoIO.onStart(widget => {
             console.log(widget);
@@ -151,26 +151,29 @@
         }
         window.TagoIO.ready();
     </script>
-    <div id="app" class="max-w-4xl mx-auto">
+    <div id="app" class="max-w-4xl mx-auto" style="max-width: 80rem;">
         <!-- Page Title -->
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 text-center drop-shadow-sm">
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-700">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-8 text-center drop-shadow-sm">
+            <span>
                 Gestão de Pneus
             </span>
         </h1>
 
         <!-- Cliente Display -->
-        <div class="text-center text-gray-700 text-sm mb-4 p-2 bg-blue-100 rounded-lg shadow-sm">
-            Cliente Atual: <span class="font-mono font-bold text-blue-800 break-all" id="userIdDisplay">Carregando...</span>
+        <div class="text-center text-white text-sm mb-4 p-4 rounded-lg shadow-lg border border-white/20 backdrop-blur-md bg-white/10 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10"></div>
+            <div class="relative z-10">
+                Cliente Atual: <span class="font-mono font-bold text-blue-200 break-all" id="userIdDisplay">Carregando...</span>
+            </div>
         </div>
 
         <!-- Delete Confirmation Modals (Hidden by default) -->
-        <div id="deleteTireConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Pneu</h3>
-                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este pneu? Esta ação é irreversível e removerá todos os eventos associados.</p>
+        <div id="deleteTireConfirmModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center border border-gray-700">
+                <h3 class="text-lg font-semibold text-white mb-4">Confirmar Exclusão do Pneu</h3>
+                <p class="text-gray-300 mb-6">Tem certeza que deseja excluir este pneu? Esta ação é irreversível e removerá todos os eventos associados.</p>
                 <div class="flex justify-center space-x-4">
-                    <button id="cancelDeleteTire" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                    <button id="cancelDeleteTire" class="px-5 py-2 bg-gray-600 text-gray-200 rounded-full hover:bg-gray-7000 transition duration-200">
                         Cancelar
                     </button>
                     <button id="confirmDeleteTire" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
@@ -180,12 +183,12 @@
             </div>
         </div>
 
-        <div id="deleteVehicleConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Veículo</h3>
-                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este veículo? Esta ação é irreversível.</p>
+        <div id="deleteVehicleConfirmModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center border border-gray-700">
+                <h3 class="text-lg font-semibold text-white mb-4">Confirmar Exclusão do Veículo</h3>
+                <p class="text-gray-300 mb-6">Tem certeza que deseja excluir este veículo? Esta ação é irreversível.</p>
                 <div class="flex justify-center space-x-4">
-                    <button id="cancelDeleteVehicle" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                    <button id="cancelDeleteVehicle" class="px-5 py-2 bg-gray-600 text-gray-200 rounded-full hover:bg-gray-7000 transition duration-200">
                         Cancelar
                     </button>
                     <button id="confirmDeleteVehicle" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
@@ -195,12 +198,12 @@
             </div>
         </div>
 
-        <div id="deleteEventConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão do Evento</h3>
-                <p class="text-gray-700 mb-6">Tem certeza que deseja excluir este evento? Esta ação é irreversível.</p>
+        <div id="deleteEventConfirmModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center border border-gray-700">
+                <h3 class="text-lg font-semibold text-white mb-4">Confirmar Exclusão do Evento</h3>
+                <p class="text-gray-300 mb-6">Tem certeza que deseja excluir este evento? Esta ação é irreversível.</p>
                 <div class="flex justify-center space-x-4">
-                    <button id="cancelDeleteEvent" class="px-5 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition duration-200">
+                    <button id="cancelDeleteEvent" class="px-5 py-2 bg-gray-600 text-gray-200 rounded-full hover:bg-gray-7000 transition duration-200">
                         Cancelar
                     </button>
                     <button id="confirmDeleteEvent" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition duration-200">
@@ -213,24 +216,27 @@
         <!-- Main Content Area -->
         <div id="mainView">
             <!-- Tab Navigation -->
-            <div class="flex flex-wrap justify-center gap-2 mb-8 bg-blue-700 p-3 rounded-xl shadow-lg">
-                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="kpisSection">KPIs</button>
-                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="swapSection">Rodízio/Permuta</button>
-                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="vehicleManagementSection">Gestão de Veículos</button>
-                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="tireManagementSection">Gestão de Pneus</button>
-                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-blue-100 hover:bg-blue-800 transition duration-200" data-section="vehicleVisualizationSection">Visualização</button>
+            <div class="flex flex-wrap justify-center gap-2 mb-8 bg-gray-800 p-3 rounded-xl shadow-lg border border-gray-700">
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-700 transition duration-200" data-section="kpisSection">KPIs</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-700 transition duration-200" data-section="swapSection">Rodízio/Permuta</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-700 transition duration-200" data-section="vehicleManagementSection">Gestão de Veículos</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-700 transition duration-200" data-section="tireManagementSection">Gestão de Pneus</button>
+                <button class="tab-button px-5 py-2 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-700 transition duration-200" data-section="vehicleVisualizationSection">Visualização</button>
             </div>
 
             <!-- Section: Indicadores-Chave de Desempenho (KPIs) -->
-            <div id="kpisSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
-                <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6 sm:p-8 text-white text-center">
-                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Indicadores-Chave de Desempenho (KPIs)</h2>
-                    <p class="text-blue-100 text-sm sm:base">Visão geral da sua frota de pneus.</p>
+            <div id="kpisSection" class="main-section max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 hidden border border-white/20" style="max-width: 80rem;">
+                <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg">Indicadores-Chave de Desempenho (KPIs)</h2>
+                        <p class="text-slate-200 text-sm sm:base font-medium">Visão geral da sua frota de pneus.</p>
+                    </div>
                 </div>
                 <div id="kpisContent" class="p-6 sm:p-8">
                     <!-- KPIs will be rendered here by JavaScript -->
-                    <div class="text-center text-gray-600">
-                        <svg class="animate-spin inline-block -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <div class="text-center text-gray-400">
+                        <svg class="animate-spin inline-block -ml-1 mr-3 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -240,25 +246,28 @@
             </div>
 
             <!-- Section: Rodízio/Permutação (Swap) -->
-            <div id="swapSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
-                <div class="bg-gradient-to-r from-indigo-500 to-indigo-700 p-6 sm:p-8 text-white text-center">
-                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Rodízio/Permutação (Swap)</h2>
-                    <p class="text-indigo-100 text-sm sm:base">Troque a posição de dois pneus rapidamente.</p>
+            <div id="swapSection" class="main-section max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 hidden border border-white/20" style="max-width: 80rem;">
+                <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg">Rodízio/Permutação (Swap)</h2>
+                        <p class="text-slate-200 text-sm sm:base font-medium">Troque a posição de dois pneus rapidamente.</p>
+                    </div>
                 </div>
                 <form id="swapTiresForm" class="p-6 sm:p-8 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="tire1ForSwap" class="block text-sm font-medium text-gray-700 mb-1">Pneu 1</label>
+                            <label for="tire1ForSwap" class="block text-sm font-medium text-gray-100 mb-1">Pneu 1</label>
                             <select name="tire1ForSwap" id="tire1ForSwap" required
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 bg-gray-700 text-white">
                                 <option value="">Selecione o Pneu 1</option>
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
                         <div>
-                            <label for="tire2ForSwap" class="block text-sm font-medium text-gray-700 mb-1">Pneu 2</label>
+                            <label for="tire2ForSwap" class="block text-sm font-medium text-gray-100 mb-1">Pneu 2</label>
                             <select name="tire2ForSwap" id="tire2ForSwap" required
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 bg-gray-700 text-white">
                                 <option value="">Selecione o Pneu 2</option>
                                 <!-- Options will be populated by JavaScript -->
                             </select>
@@ -270,41 +279,44 @@
                             Realizar Permuta
                         </button>
                     </div>
-                    <div id="swapMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                    <div id="swapMessage" class="mt-4 p-3 bg-blue-900 text-blue-200 rounded-lg border border-blue-700 text-center animate-fade-in hidden"></div>
                 </form>
             </div>
 
             <!-- Section: Gestão de Veículos (Cadastro e Lista) -->
-            <div id="vehicleManagementSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
-                <div class="bg-gradient-to-r from-blue-600 to-cyan-700 p-6 sm:p-8 text-white text-center">
-                    <h2 id="vehicleFormTitle" class="text-2xl sm:text-3xl font-bold mb-2">Cadastro de Veículos</h2>
-                    <p id="vehicleFormSubtitle" class="text-blue-100 text-sm sm:base">Registre seus veículos para associar os pneus.</p>
+            <div id="vehicleManagementSection" class="main-section max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 hidden border border-white/20" style="max-width: 80rem;">
+                <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                    <div class="relative z-10">
+                        <h2 id="vehicleFormTitle" class="text-2xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg">Cadastro de Veículos</h2>
+                        <p id="vehicleFormSubtitle" class="text-slate-200 text-sm sm:base font-medium">Registre seus veículos para associar os pneus.</p>
+                    </div>
                 </div>
                 <form id="vehicleForm" class="p-6 sm:p-8 space-y-4">
                     <input type="hidden" id="vehicleIdToEdit">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="placa" class="block text-sm font-medium text-gray-700 mb-1">Placa</label>
+                            <label for="placa" class="block text-sm font-medium text-gray-100 mb-1">Placa</label>
                             <input type="text" name="placa" id="placa" required
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white"
                                 placeholder="Ex: ABC1234">
                         </div>
                         <div>
-                            <label for="modelo" class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                            <label for="modelo" class="block text-sm font-medium text-gray-100 mb-1">Modelo</label>
                             <input type="text" name="modelo" id="modelo" required
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white"
                                 placeholder="Ex: Scania R450">
                         </div>
                         <div>
-                            <label for="ano" class="block text-sm font-medium text-gray-700 mb-1">Ano</label>
+                            <label for="ano" class="block text-sm font-medium text-gray-100 mb-1">Ano</label>
                             <input type="number" name="ano" id="ano" min="1900" max="2026"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white"
                                 placeholder="Ex: 2022">
                         </div>
                         <div>
-                            <label for="eixos" class="block text-sm font-medium text-gray-700 mb-1">Número de Eixos</label>
+                            <label for="eixos" class="block text-sm font-medium text-gray-100 mb-1">Número de Eixos</label>
                             <input type="number" name="eixos" id="eixos" min="1"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white"
                                 placeholder="Ex: 3">
                         </div>
                     </div>
@@ -314,65 +326,80 @@
                             Cadastrar Veículo
                         </button>
                         <button type="button" id="cancelEditVehicleButton"
-                            class="ml-4 px-8 py-3 bg-gray-500 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
+                            class="ml-4 px-8 py-3 bg-gray-7000 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
                             Cancelar Edição
                         </button>
                     </div>
-                    <div id="vehicleMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                    <div id="vehicleMessage" class="mt-4 p-3 bg-blue-900 text-blue-200 rounded-lg border border-blue-700 text-center animate-fade-in hidden"></div>
                 </form>
                 <div class="p-6 sm:p-8 pt-0">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                             <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                         </svg>
                         Veículos Cadastrados
                     </h3>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <input type="text" id="searchVehicleInput" placeholder="Buscar por placa ou modelo..."
+                            class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white">
+                        <button id="searchVehicleButton"
+                            class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
+                            Buscar
+                        </button>
+                        <button id="clearSearchVehicleButton"
+                            class="px-6 py-2 bg-gray-600 text-white font-bold rounded-full shadow-lg hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                            Limpar Busca
+                        </button>
+                    </div>
                     <div id="vehiclesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Vehicles will be rendered here by JavaScript -->
-                        <div class="text-center text-gray-600">Carregando veículos...</div>
+                        <div class="text-center text-gray-400">Carregando veículos...</div>
                     </div>
                 </div>
             </div>
 
             <!-- Main Content Area - Gestão de Pneus (Cadastro e Lista) -->
-            <div id="tireManagementSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 sm:p-8 text-white text-center">
-                    <h2 id="tireFormTitle" class="text-2xl sm:text-3xl font-bold mb-2">Cadastro de Novo Pneu</h2>
-                    <p id="tireFormSubtitle" class="text-blue-100 text-sm sm:base">Preencha os detalhes para registrar um novo ativo.</p>
+            <div id="tireManagementSection" class="main-section max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 border border-white/20" style="max-width: 80rem;">
+                <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                    <div class="relative z-10">
+                        <h2 id="tireFormTitle" class="text-2xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg">Cadastro de Novo Pneu</h2>
+                        <p id="tireFormSubtitle" class="text-slate-200 text-sm sm:base font-medium">Preencha os detalhes para registrar um novo ativo.</p>
+                    </div>
                 </div>
                 <form id="tireForm" class="p-6 sm:p-8 space-y-6">
                     <input type="hidden" id="tireIdToEdit">
-                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10">
+                        <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2z" clip-rule="evenodd" />
                             </svg>
                             Dados Básicos
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="numeroFogo" class="block text-sm font-medium text-gray-700 mb-1">Número de Fogo</label>
+                                <label for="numeroFogo" class="block text-sm font-medium text-gray-100 mb-1">Número de Fogo</label>
                                 <input type="text" name="numeroFogo" id="numeroFogo" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: PNEU00123">
                             </div>
                             <div>
-                                <label for="marca" class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                                <label for="marca" class="block text-sm font-medium text-gray-100 mb-1">Marca</label>
                                 <input type="text" name="marca" id="marca" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: Michelin">
                             </div>
                             <div>
-                                <label for="modelo" class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                                <label for="modelo" class="block text-sm font-medium text-gray-100 mb-1">Modelo</label>
                                 <input type="text" name="modelo" id="modelo" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: X Multiway 3D">
                             </div>
                             <div>
-                                <label for="statusInicial" class="block text-sm font-medium text-gray-700 mb-1">Status Inicial</label>
+                                <label for="statusInicial" class="block text-sm font-medium text-gray-100 mb-1">Status Inicial</label>
                                 <select name="statusInicial" id="statusInicial"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                                     <option value="Em Estoque - Novo">Em Estoque - Novo</option>
                                     <option value="Em Estoque - Recapado">Em Estoque - Recapado</option>
                                     <option value="Em Uso">Em Uso</option>
@@ -381,76 +408,76 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10">
+                        <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             Especificações Técnicas
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="tipoPneu" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Pneu</label>
+                                <label for="tipoPneu" class="block text-sm font-medium text-gray-100 mb-1">Tipo de Pneu</label>
                                 <input type="text" name="tipoPneu" id="tipoPneu"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: Radial, Sem Câmara">
                             </div>
                             <div>
-                                <label for="medida" class="block text-sm font-medium text-gray-700 mb-1">Medida</label>
+                                <label for="medida" class="block text-sm font-medium text-gray-100 mb-1">Medida</label>
                                 <input type="text" name="medida" id="medida" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: 295/80 R22.5">
                             </div>
                             <div>
-                                <label for="capacidadeCarga" class="block text-sm font-medium text-gray-700 mb-1">Capacidade de Carga / Índice de Velocidade</label>
+                                <label for="capacidadeCarga" class="block text-sm font-medium text-gray-100 mb-1">Capacidade de Carga / Índice de Velocidade</label>
                                 <input type="text" name="capacidadeCarga" id="capacidadeCarga"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: 152/148M">
                             </div>
                             <div>
-                                <label for="desenhoBanda" class="block text-sm font-medium text-gray-700 mb-1">Desenho da Banda de Rodagem</label>
+                                <label for="desenhoBanda" class="block text-sm font-medium text-gray-100 mb-1">Desenho da Banda de Rodagem</label>
                                 <input type="text" name="desenhoBanda" id="desenhoBanda"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: Direcional, Misto">
                             </div>
                             <div>
-                                <label for="profundidadeSulcoInicial" class="block text-sm font-medium text-gray-700 mb-1">Profundidade Inicial do Sulco (mm)</label>
+                                <label for="profundidadeSulcoInicial" class="block text-sm font-medium text-gray-100 mb-1">Profundidade Inicial do Sulco (mm)</label>
                                 <input type="number" name="profundidadeSulcoInicial" id="profundidadeSulcoInicial" step="0.1" min="0"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: 16.5">
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10">
+                        <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 002-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 0a2 2 0 100 4 2 2 0 000-4z" clip-rule="evenodd" />
                             </svg>
                             Dados de Aquisição
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="custoAquisicao" class="block text-sm font-medium text-gray-700 mb-1">Custo de Aquisição (R$)</label>
+                                <label for="custoAquisicao" class="block text-sm font-medium text-gray-100 mb-1">Custo de Aquisição (R$)</label>
                                 <input type="number" name="custoAquisicao" id="custoAquisicao" step="0.01" min="0" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: 1200.50">
                             </div>
                             <div>
-                                <label for="dataAquisicao" class="block text-sm font-medium text-gray-700 mb-1">Data de Aquisição</label>
+                                <label for="dataAquisicao" class="block text-sm font-medium text-gray-100 mb-1">Data de Aquisição</label>
                                 <input type="date" name="dataAquisicao" id="dataAquisicao" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                             </div>
                             <div>
-                                <label for="fornecedor" class="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
+                                <label for="fornecedor" class="block text-sm font-medium text-gray-100 mb-1">Fornecedor</label>
                                 <input type="text" name="fornecedor" id="fornecedor" required
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: Pneus Brasil S.A.">
                             </div>
                             <div>
-                                <label for="numeroNF" class="block text-sm font-medium text-gray-700 mb-1">Número da Nota Fiscal</label>
+                                <label for="numeroNF" class="block text-sm font-medium text-gray-100 mb-1">Número da Nota Fiscal</label>
                                 <input type="text" name="numeroNF" id="numeroNF"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                     placeholder="Ex: 000123456">
                             </div>
                         </div>
@@ -463,17 +490,17 @@
                             Cadastrar Pneu
                         </button>
                         <button type="button" id="cancelEditTireButton"
-                            class="ml-4 px-8 py-3 bg-gray-500 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
+                            class="ml-4 px-8 py-3 bg-gray-7000 text-white font-bold rounded-full shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out transform hover:-translate-y-1 hidden">
                             Cancelar Edição
                         </button>
                     </div>
 
-                    <div id="tireMessage" class="mt-6 p-4 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                    <div id="tireMessage" class="mt-6 p-4 bg-blue-900 text-blue-200 rounded-lg border border-blue-700 text-center animate-fade-in hidden"></div>
                 </form>
                 <div class="p-6 sm:p-8">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <h3 class="text-lg font-semibold text-gray-200 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2zm-1 2a1 1 100-2 1 1 0 000 2z" clip-rule="evenodd" />
                             </svg>
                             Pneus Cadastrados
@@ -481,33 +508,38 @@
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 mb-4">
                         <input type="text" id="searchTireInput" placeholder="Buscar por Número de Fogo..."
-                            class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white">
                         <button id="searchTireButton"
                             class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
                             Buscar
                         </button>
                         <button id="clearSearchTireButton"
-                            class="px-6 py-2 bg-gray-400 text-white font-bold rounded-full shadow-lg hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                            class="px-6 py-2 bg-gray-600 text-white font-bold rounded-full shadow-lg hover:bg-gray-7000 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
                             Limpar Busca
                         </button>
                     </div>
                     <div id="tiresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Tires will be rendered here by JavaScript -->
-                        <div class="text-center text-gray-600">Carregando pneus...</div>
+                        <div class="text-center text-gray-400">Carregando pneus...</div>
                     </div>
                 </div>
             </div>
 
             <!-- Section: Visualização de Pneus em Veículos -->
-            <div id="vehicleVisualizationSection" class="main-section max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
-                <div class="bg-gradient-to-r from-blue-700 to-blue-900 p-6 sm:p-8 text-white text-center">
-                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Visualização de Pneus em Veículos</h2>
-                    <p class="text-blue-200 text-sm sm:base">Veja a distribuição dos pneus na sua frota.</p>
+            <div id="vehicleVisualizationSection" class="main-section max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 hidden border border-white/20" style="max-width: 80rem;">
+
+                <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-2 text-white drop-shadow-lg">Visualização de Pneus em Veículos</h2>
+                        <p class="text-slate-200 text-sm sm:base font-medium">Veja a distribuição dos pneus na sua frota.</p>
+                    </div>
                 </div>
+
                 <div class="p-6 sm:p-8">
                     <div class="flex flex-col sm:flex-row gap-2 mb-6">
                         <select id="selectVehicleForVisualization"
-                            class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-700 text-white">
                             <option value="">Selecione um veículo para visualizar</option>
                         </select>
                         <button id="viewVehicleVisualizationButton" disabled
@@ -515,11 +547,11 @@
                             Visualizar
                         </button>
                         <button id="clearVehicleSelectionButton" disabled
-                            class="px-6 py-2 bg-gray-400 text-white font-bold rounded-full shadow-lg hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                            class="px-6 py-2 bg-gray-600 text-white font-bold rounded-full shadow-lg hover:bg-gray-7000 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
                             Limpar Seleção
                         </button>
                     </div>
-                    <div id="vehicleTireVisualization" class="p-6 sm:p-8 text-center text-gray-600 border border-gray-200 rounded-lg bg-gray-50">
+                    <div id="vehicleTireVisualization" class="p-6 sm:p-8 text-center text-gray-400 border border-gray-600 rounded-lg bg-gray-700">
                         Selecione um veículo para visualizar a distribuição dos pneus.
                     </div>
                 </div>
@@ -527,24 +559,27 @@
         </div>
 
         <!-- Tire Detail View (Hidden by default) -->
-        <div id="tireDetailView" class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-8 hidden">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 sm:p-8 text-white flex justify-between items-center">
-                <h2 class="text-2xl sm:text-3xl font-bold">Detalhes do Pneu</h2>
-                <button id="backToListViewButton"
-                    class="px-4 py-2 bg-white text-blue-600 rounded-full shadow-md hover:bg-gray-100 transition duration-200 text-sm font-semibold">
-                    Voltar para a Lista
-                </button>
+        <div id="tireDetailView" class="max-w-4xl mx-auto backdrop-blur-md bg-white/10 rounded-2xl shadow-xl overflow-hidden mb-8 hidden border border-white/20" style="max-width: 80rem;">
+            <div class="bg-gradient-to-r from-slate-700 via-gray-800 to-slate-900 p-6 sm:p-8 text-white flex justify-between items-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-gray-700/20"></div>
+                <div class="relative z-10 flex justify-between items-center w-full">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">Detalhes do Pneu</h2>
+                    <button id="backToListViewButton"
+                        class="px-4 py-2 bg-white text-slate-700 rounded-full shadow-md hover:bg-gray-100 transition duration-200 text-sm font-semibold">
+                        Voltar para a Lista
+                    </button>
+                </div>
             </div>
 
             <div id="tireDetailsContent" class="p-6 sm:p-8 space-y-6">
                 <!-- Tire details will be rendered here by JavaScript -->
-                <div class="text-center text-gray-600">Carregando detalhes do pneu...</div>
+                <div class="text-center text-gray-400">Carregando detalhes do pneu...</div>
             </div>
 
             <!-- Add New Event Form -->
-            <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100 mx-6 sm:mx-8 mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+            <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10 mx-6 sm:mx-8 mb-6">
+                <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                         <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                     </svg>
@@ -552,9 +587,9 @@
                 </h3>
                 <form id="newEventForm" class="space-y-4">
                     <div>
-                        <label for="eventType" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento</label>
+                        <label for="eventType" class="block text-sm font-medium text-gray-100 mb-1">Tipo de Evento</label>
                         <select name="tipo" id="eventType" required
-                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                             <option value="">Selecione um tipo</option>
                             <option value="Montagem em Veículo">Montagem em Veículo</option>
                             <option value="Remoção de Veículo">Remoção de Veículo</option>
@@ -570,25 +605,25 @@
                         </select>
                     </div>
                     <div>
-                        <label for="eventDate" class="block text-sm font-medium text-gray-700 mb-1">Data do Evento</label>
+                        <label for="eventDate" class="block text-sm font-medium text-gray-100 mb-1">Data do Evento</label>
                         <input type="date" name="data" id="eventDate" required
-                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                            class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                     </div>
 
                     <!-- Conditional fields for Montagem, Remocao, Rodizio/Permutacao -->
                     <div id="vehicleEventFields" class="hidden">
                         <div>
-                            <label for="eventVehicleId" class="block text-sm font-medium text-gray-700 mb-1">Veículo</label>
+                            <label for="eventVehicleId" class="block text-sm font-medium text-gray-100 mb-1">Veículo</label>
                             <select name="detalhes.veiculoId" id="eventVehicleId"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                                 <option value="">Selecione um veículo</option>
                                 <!-- Options populated by JS -->
                             </select>
                         </div>
                         <div>
-                            <label for="eventAxle" class="block text-sm font-medium text-gray-700 mb-1">Eixo</label>
+                            <label for="eventAxle" class="block text-sm font-medium text-gray-100 mb-1">Eixo</label>
                             <select name="detalhes.eixo" id="eventAxle"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                                 <option value="">Selecione o Eixo</option>
                                 <option value="Eixo Dianteiro">Eixo Dianteiro</option>
                                 <option value="Eixo 1">Eixo 1</option>
@@ -600,9 +635,9 @@
                             </select>
                         </div>
                         <div>
-                            <label for="eventPosition" class="block text-sm font-medium text-gray-700 mb-1">Posição</label>
+                            <label for="eventPosition" class="block text-sm font-medium text-gray-100 mb-1">Posição</label>
                             <select name="detalhes.posicao" id="eventPosition"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white">
                                 <option value="">Selecione a Posição</option>
                                 <option value="Esquerda Interna">Esquerda Interna</option>
                                 <option value="Esquerda Externa">Esquerda Externa</option>
@@ -617,15 +652,15 @@
                     <!-- Conditional fields for Recapagem Return -->
                     <div id="recapEventFields" class="hidden">
                         <div>
-                            <label for="recapCost" class="block text-sm font-medium text-gray-700 mb-1">Custo da Recapagem (R$)</label>
+                            <label for="recapCost" class="block text-sm font-medium text-gray-100 mb-1">Custo da Recapagem (R$)</label>
                             <input type="number" name="detalhes.custoRecapagem" id="recapCost" step="0.01" min="0"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                 placeholder="Ex: 350.00">
                         </div>
                         <div>
-                            <label for="newSulcoDepth" class="block text-sm font-medium text-gray-700 mb-1">Nova Profundidade do Sulco (mm)</label>
+                            <label for="newSulcoDepth" class="block text-sm font-medium text-gray-100 mb-1">Nova Profundidade do Sulco (mm)</label>
                             <input type="number" name="detalhes.novaProfundidadeSulco" id="newSulcoDepth" step="0.1" min="0"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                 placeholder="Ex: 14.0">
                         </div>
                     </div>
@@ -633,15 +668,15 @@
                     <!-- Conditional fields for Quilometragem e Sulco -->
                     <div id="mileageSulcoEventFields" class="hidden">
                         <div>
-                            <label for="mileageVehicle" class="block text-sm font-medium text-gray-700 mb-1">Quilometragem do Veículo (Hodômetro)</label>
+                            <label for="mileageVehicle" class="block text-sm font-medium text-gray-100 mb-1">Quilometragem do Veículo (Hodômetro)</label>
                             <input type="number" name="detalhes.quilometragemVeiculo" id="mileageVehicle" min="0"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                 placeholder="Ex: 150000">
                         </div>
                         <div>
-                            <label for="currentSulcoDepth" class="block text-sm font-medium text-gray-700 mb-1">Profundidade Atual do Sulco (mm)</label>
+                            <label for="currentSulcoDepth" class="block text-sm font-medium text-gray-100 mb-1">Profundidade Atual do Sulco (mm)</label>
                             <input type="number" name="detalhes.profundidadeSulcoAtual" id="currentSulcoDepth" step="0.1" min="0"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                 placeholder="Ex: 8.5">
                         </div>
                     </div>
@@ -649,17 +684,17 @@
                     <!-- Conditional field for Discard -->
                     <div id="discardEventFields" class="hidden">
                         <div>
-                            <label for="discardReason" class="block text-sm font-medium text-gray-700 mb-1">Motivo do Descarte</label>
+                            <label for="discardReason" class="block text-sm font-medium text-gray-100 mb-1">Motivo do Descarte</label>
                             <textarea name="detalhes.motivoDescarte" id="discardReason" rows="2"
-                                class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                                class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                                 placeholder="Ex: Carcaça condenada, desgaste excessivo, dano lateral"></textarea>
                         </div>
                     </div>
 
                     <div>
-                        <label for="eventObs" class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                        <label for="eventObs" class="block text-sm font-medium text-gray-100 mb-1">Observações</label>
                         <textarea name="observacoes" id="eventObs" rows="3"
-                            class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                            class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-gray-600 text-white"
                             placeholder="Detalhes adicionais do evento"></textarea>
                     </div>
                     <div class="flex justify-center">
@@ -668,27 +703,27 @@
                             Adicionar Evento
                         </button>
                     </div>
-                    <div id="eventMessage" class="mt-4 p-3 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-center animate-fade-in hidden"></div>
+                    <div id="eventMessage" class="mt-4 p-3 bg-blue-900 text-blue-200 rounded-lg border border-blue-700 text-center animate-fade-in hidden"></div>
                 </form>
             </div>
 
             <!-- Tire Events Timeline -->
-            <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100 mx-6 sm:mx-8 mb-8">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+            <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10 mx-6 sm:mx-8 mb-8">
+                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
                     Linha do Tempo de Eventos
                 </h3>
-                <div id="tireEventsTimeline" class="relative border-l-2 border-blue-200 pl-4">
+                <div id="tireEventsTimeline" class="relative border-l-2 border-blue-400 pl-4">
                     <!-- Events will be rendered here by JavaScript -->
-                    <div class="text-center text-gray-600">Carregando eventos...</div>
+                    <div class="text-center text-gray-400">Carregando eventos...</div>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="mt-12 text-center text-gray-600 text-sm">
+        <div class="mt-12 text-center text-gray-400 text-sm">
             <!-- Removed previous footer text as requested -->
         </div>
     </div>
@@ -743,6 +778,11 @@
         const searchTireInput = document.getElementById('searchTireInput');
         const searchTireButton = document.getElementById('searchTireButton');
         const clearSearchTireButton = document.getElementById('clearSearchTireButton');
+
+        // Search Elements for Vehicles
+        const searchVehicleInput = document.getElementById('searchVehicleInput');
+        const searchVehicleButton = document.getElementById('searchVehicleButton');
+        const clearSearchVehicleButton = document.getElementById('clearSearchVehicleButton');
 
 
         // Vehicle Form Elements
@@ -815,17 +855,22 @@
         let tireToDeleteId = null;
         let vehicleToDeleteId = null;
         let eventToDeleteId = null;
+        
+        // --- Pagination Variables ---
+        let currentTirePage = 1;
+        let currentVehiclePage = 1;
+        const ITEMS_PER_PAGE = 3;
 
         // --- Helper Functions ---
         function showMessage(element, msg, isError = false) {
             element.textContent = msg;
             element.classList.remove('hidden');
             if (isError) {
-                element.classList.remove('bg-blue-100', 'text-blue-800', 'border-blue-200');
+                element.classList.remove('bg-blue-900', 'text-blue-200', 'border-blue-700');
                 element.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
             } else {
                 element.classList.remove('bg-red-100', 'text-red-800', 'border-red-200');
-                element.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-200');
+                element.classList.add('bg-blue-900', 'text-blue-200', 'border-blue-700');
             }
             setTimeout(() => {
                 element.classList.add('hidden');
@@ -909,7 +954,8 @@
                     createdAt: tire.createdAt ? new Date(tire.createdAt) : null,
                     updatedAt: tire.updatedAt ? new Date(tire.updatedAt) : null,
                 }));
-                renderTires(); // Render all tires by default
+                currentTirePage = 1; // Reset to first page
+                renderTires(); // Render first page of tires
                 renderKPIs();
                 // renderVehicleVisualization(); // Removed initial full render
                 populateSwapTireSelects();
@@ -989,7 +1035,8 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 vehicles = await response.json();
-                renderVehicles();
+                currentVehiclePage = 1; // Reset to first page
+                renderVehicles(); // Render first page of vehicles
                 populateEventVehicleSelect();
                 populateVehicleVisualizationSelect(); // Populate the visualization select
             } catch (error) {
@@ -1186,64 +1233,71 @@
 
             const kpisHtml = `
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">Total de Pneus</p>
-                        <p class="text-2xl font-bold text-blue-900">${totalPneus}</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">Total de Pneus</p>
+                        <p class="text-2xl font-bold text-white">${totalPneus}</p>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">Custo Total Aquisição</p>
-                        <p class="text-2xl font-bold text-blue-900">R$ ${custoTotalAquisicao.toFixed(2)}</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">Custo Total Aquisição</p>
+                        <p class="text-2xl font-bold text-white">R$ ${custoTotalAquisicao.toFixed(2)}</p>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">Custo Total Recapagens</p>
-                        <p class="text-2xl font-bold text-blue-900">R$ ${custoTotalRecapagens.toFixed(2)}</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">Custo Total Recapagens</p>
+                        <p class="text-2xl font-bold text-white">R$ ${custoTotalRecapagens.toFixed(2)}</p>
                     </div>
-                    <div class="bg-blue-100 p-4 rounded-lg shadow-sm border border-blue-300 col-span-1 md:col-span-2 lg:col-span-3">
-                        <p class="text-sm font-medium text-blue-700 mb-2">Pneus por Status</p>
+                    <div class="backdrop-blur-sm bg-white/10 p-4 rounded-lg shadow-sm border border-white/20 col-span-1 md:col-span-2 lg:col-span-3">
+                        <p class="text-sm font-medium text-gray-300 mb-2">Pneus por Status</p>
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-sm">
                             ${Object.entries(pneusPorStatus).map(([status, count]) => `
-                                <div class="flex flex-col items-center p-2 bg-blue-200 rounded-md">
-                                    <span class="font-semibold text-blue-800">${count}</span>
-                                    <span class="text-blue-700 text-xs text-center leading-tight">${status}</span>
+                                <div class="flex flex-col items-center p-2 backdrop-blur-sm bg-white/10 rounded-md hover:bg-white/20 transition duration-200">
+                                    <span class="font-semibold text-white">${count}</span>
+                                    <span class="text-gray-300 text-xs text-center leading-tight">${status}</span>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">Quilometragem Total Frota</p>
-                        <p class="text-2xl font-bold text-blue-900">${quilometragemTotalFrota.toFixed(0)} km</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">Quilometragem Total Frota</p>
+                        <p class="text-2xl font-bold text-white">${quilometragemTotalFrota.toFixed(0)} km</p>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">Média Recapagens/Pneu</p>
-                        <p class="text-2xl font-bold text-blue-900">${mediaRecapagensPorPneu.toFixed(2)}</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">Média Recapagens/Pneu</p>
+                        <p class="text-2xl font-bold text-white">${mediaRecapagensPorPneu.toFixed(2)}</p>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
-                        <p class="text-sm font-medium text-blue-700">CPK (Custo/Km)</p>
-                        <p class="text-2xl font-bold text-blue-900">R$ ${cpk.toFixed(4)}</p>
+                    <div class="backdrop-blur-sm bg-white/5 p-4 rounded-lg shadow-sm border border-white/10 hover:bg-white/10 transition duration-200">
+                        <p class="text-sm font-medium text-gray-300">CPK (Custo/Km)</p>
+                        <p class="text-2xl font-bold text-white">R$ ${cpk.toFixed(4)}</p>
                     </div>
                 </div>
             `;
             document.getElementById('kpisContent').innerHTML = kpisHtml;
         }
 
-        function renderTires(tiresToRender = tires) { // Added optional parameter
+        function renderTires(tiresToRender = tires, page = 1) { // Added pagination parameter
             if (tiresToRender.length === 0) {
                 tiresListDiv.innerHTML = `
-                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50 col-span-full">
+                    <div class="text-center text-gray-400 p-4 border border-gray-600 rounded-lg bg-gray-700 col-span-full">
                         Nenhum pneu cadastrado ainda ou nenhum resultado encontrado.
                     </div>
                 `;
                 return;
             }
 
-            tiresListDiv.innerHTML = tiresToRender.map(tire => {
+            // Calculate pagination
+            const startIndex = (page - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const paginatedTires = tiresToRender.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(tiresToRender.length / ITEMS_PER_PAGE);
+            const hasMore = page < totalPages;
+
+            tiresListDiv.innerHTML = paginatedTires.map(tire => {
                 const statusClass = tire.statusInicial === 'Descartado' ? 'text-red-600' :
-                                    tire.statusInicial.includes('Em Uso') ? 'text-blue-600' :
-                                    tire.statusInicial.includes('Em Estoque') ? 'text-blue-600' :
-                                    'text-blue-600';
+                                    tire.statusInicial.includes('Em Uso') ? 'text-blue-300' :
+                                    tire.statusInicial.includes('Em Estoque') ? 'text-green-400' :
+                                    'text-blue-300';
                 const createdAtDate = tire.createdAt ? new Date(tire.createdAt).toLocaleDateString() : 'N/A';
                 return `
-                    <div class="bg-white border border-gray-200 rounded-lg shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col">
+                    <div class="bg-white border border-gray-600 rounded-lg shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col">
                         <div class="flex-grow cursor-pointer" data-tire-id="${tire.id}">
                             <h4 class="font-bold text-lg text-blue-700 mb-1">${tire.numeroFogo}</h4>
                             <p class="text-gray-800 text-sm">Marca: <span class="font-medium">${tire.marca}</span></p>
@@ -1252,7 +1306,7 @@
                             <p class="text-gray-800 text-sm">Status: <span class="font-medium ${statusClass}">${tire.statusInicial}</span></p>
                             ${tire.currentVehiclePlaca ? `<p class="text-gray-800 text-sm">Localização: <span class="font-medium">${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition}</span></p>` : ''}
                             <p class="text-gray-800 text-sm">KM Total: <span class="font-medium">${parseFloat(tire.quilometragemTotalPercorrida || 0).toFixed(0)} km</span></p>
-                            <p class="text-gray-600 text-xs mt-2">Adicionado em: ${createdAtDate}</p>
+                            <p class="text-gray-400 text-xs mt-2">Adicionado em: ${createdAtDate}</p>
                         </div>
                         <div class="mt-4 flex justify-end space-x-2">
                             <button data-action="edit" data-tire-id="${tire.id}"
@@ -1266,7 +1320,18 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join('') + `
+                <div class="col-span-full mt-4 text-center">
+                    <div class="text-gray-400 text-sm mb-2">
+                        Mostrando ${startIndex + 1}-${Math.min(endIndex, tiresToRender.length)} de ${tiresToRender.length} pneus
+                    </div>
+                    ${hasMore ? `
+                        <button id="loadMoreTires" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
+                            Carregar Mais Pneus
+                        </button>
+                    ` : ''}
+                </div>
+            `;
 
             // Add event listeners for view, edit, delete buttons
             tiresListDiv.querySelectorAll('[data-tire-id]').forEach(element => {
@@ -1289,20 +1354,36 @@
                     }
                 }
             });
+
+            // Add event listener for load more button
+            const loadMoreButton = document.getElementById('loadMoreTires');
+            if (loadMoreButton) {
+                loadMoreButton.addEventListener('click', () => {
+                    currentTirePage++;
+                    renderTires(tiresToRender, currentTirePage);
+                });
+            }
         }
 
-        function renderVehicles() {
-            if (vehicles.length === 0) {
+        function renderVehicles(page = 1, vehiclesToRender = vehicles) {
+            if (vehiclesToRender.length === 0) {
                 vehiclesListDiv.innerHTML = `
-                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50 col-span-full">
-                        Nenhum veículo cadastrado ainda.
+                    <div class="text-center text-gray-400 p-4 border border-gray-600 rounded-lg bg-gray-700 col-span-full">
+                        Nenhum veículo cadastrado ainda ou nenhum resultado encontrado.
                     </div>
                 `;
                 return;
             }
 
-            vehiclesListDiv.innerHTML = vehicles.map(vehicle => `
-                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-3 flex flex-col">
+            // Calculate pagination
+            const startIndex = (page - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const paginatedVehicles = vehiclesToRender.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(vehiclesToRender.length / ITEMS_PER_PAGE);
+            const hasMore = page < totalPages;
+
+            vehiclesListDiv.innerHTML = paginatedVehicles.map(vehicle => `
+                <div class="bg-white border border-gray-600 rounded-lg shadow-sm p-3 flex flex-col">
                     <div class="flex-grow">
                         <p class="font-bold text-gray-900">${vehicle.placa}</p>
                         <p class="text-sm text-gray-700">${vehicle.modelo} (${vehicle.ano}) - ${vehicle.eixos} Eixos</p>
@@ -1318,7 +1399,18 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `).join('') + `
+                <div class="col-span-full mt-4 text-center">
+                    <div class="text-gray-400 text-sm mb-2">
+                        Mostrando ${startIndex + 1}-${Math.min(endIndex, vehiclesToRender.length)} de ${vehiclesToRender.length} veículos
+                    </div>
+                    ${hasMore ? `
+                        <button id="loadMoreVehicles" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out">
+                            Carregar Mais Veículos
+                        </button>
+                    ` : ''}
+                </div>
+            `;
 
             vehiclesListDiv.querySelectorAll('button[data-vehicle-id]').forEach(button => {
                 const action = button.dataset.action;
@@ -1328,48 +1420,57 @@
                     button.addEventListener('click', () => confirmDeleteVehicle(button.dataset.vehicleId));
                 }
             });
+
+            // Add event listener for load more button
+            const loadMoreButton = document.getElementById('loadMoreVehicles');
+            if (loadMoreButton) {
+                loadMoreButton.addEventListener('click', () => {
+                    currentVehiclePage++;
+                    renderVehicles(currentVehiclePage, vehiclesToRender);
+                });
+            }
         }
 
         function renderTireDetails() {
             const tire = getTireById(selectedTireId);
             if (!tire) {
                 document.getElementById('tireDetailsContent').innerHTML = `
-                    <div class="text-center text-gray-600 p-8">Pneu não encontrado ou erro ao carregar.</div>
+                    <div class="text-center text-gray-400 p-8">Pneu não encontrado ou erro ao carregar.</div>
                 `;
                 return;
             }
 
             const statusClass = tire.statusInicial === 'Descartado' ? 'text-red-600' :
-                                tire.statusInicial.includes('Em Uso') ? 'text-blue-600' :
-                                tire.statusInicial.includes('Em Estoque') ? 'text-blue-600' :
+                                tire.statusInicial.includes('Em Uso') ? 'text-blue-300' :
+                                tire.statusInicial.includes('Em Estoque') ? 'text-green-400' :
                                 'text-blue-600';
 
             document.getElementById('tireDetailsContent').innerHTML = `
-                <div class="bg-gray-50 p-5 rounded-xl shadow-inner border border-gray-100">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <div class="backdrop-blur-sm bg-white/5 p-5 rounded-xl shadow-inner border border-white/10">
+                    <h3 class="text-lg font-semibold text-gray-200 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm-3 9a1 1 0 11-2 0 1 1 0 012 0zm5-1a1 1 0 100-2 1 1 0 000 2zm-2 4a1 1 0 11-2 0 1 1 0 012 0z" />
                         </svg>
-                        Informações do Pneu: <span class="text-blue-700 ml-2">${tire.numeroFogo}</span>
+                        Informações do Pneu: <span class="text-blue-400 ml-2">${tire.numeroFogo}</span>
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <p><span class="font-medium">Marca:</span> ${tire.marca}</p>
-                        <p><span class="font-medium">Modelo:</span> ${tire.modelo}</p>
-                        <p><span class="font-medium">Medida:</span> ${tire.medida}</p>
-                        <p><span class="font-medium">Tipo:</span> ${tire.tipoPneu || 'N/A'}</p>
-                        <p><span class="font-medium">Capacidade Carga:</span> ${tire.capacidadeCarga || 'N/A'}</p>
-                        <p><span class="font-medium">Desenho Banda:</span> ${tire.desenhoBanda || 'N/A'}</p>
-                        <p><span class="font-medium">Profundidade Inicial:</span> ${tire.profundidadeSulcoInicial} mm</p>
-                        <p><span class="font-medium">Custo Aquisição:</span> R$ ${parseFloat(tire.custoAquisicao).toFixed(2)}</p>
-                        <p><span class="font-medium">Data Aquisição:</span> ${tire.dataAquisicao}</p>
-                        <p><span class="font-medium">Fornecedor:</span> ${tire.fornecedor}</p>
-                        <p><span class="font-medium">Número NF:</span> ${tire.numeroNF || 'N/A'}</p>
-                        <p><span class="font-medium">Status Atual:</span> <span class="font-bold ${statusClass}">${tire.statusInicial}</span></p>
-                        <p><span class="font-medium">Nº Recapagens:</span> ${tire.numeroRecapagens}</p>
-                        <p><span class="font-medium">KM Total Percorrida:</span> ${parseFloat(tire.quilometragemTotalPercorrida || 0).toFixed(0)} km</p>
-                        <p><span class="font-medium">Última Leitura Hodômetro:</span> ${parseFloat(tire.ultimaLeituraHodometroRegistrada || 0).toFixed(0)} km</p>
-                        <p><span class="font-medium">Profundidade Sulco Atual:</span> ${tire.profundidadeSulcoAtual || 'N/A'} mm</p>
-                        ${tire.currentVehiclePlaca ? `<p class="col-span-2"><span class="font-medium">Localização Atual:</span> ${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition}</p>` : ''}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                        <p><span class="font-medium text-white">Marca:</span> ${tire.marca}</p>
+                        <p><span class="font-medium text-white">Modelo:</span> ${tire.modelo}</p>
+                        <p><span class="font-medium text-white">Medida:</span> ${tire.medida}</p>
+                        <p><span class="font-medium text-white">Tipo:</span> ${tire.tipoPneu || 'N/A'}</p>
+                        <p><span class="font-medium text-white">Capacidade Carga:</span> ${tire.capacidadeCarga || 'N/A'}</p>
+                        <p><span class="font-medium text-white">Desenho Banda:</span> ${tire.desenhoBanda || 'N/A'}</p>
+                        <p><span class="font-medium text-white">Profundidade Inicial:</span> ${tire.profundidadeSulcoInicial} mm</p>
+                        <p><span class="font-medium text-white">Custo Aquisição:</span> R$ ${parseFloat(tire.custoAquisicao).toFixed(2)}</p>
+                        <p><span class="font-medium text-white">Data Aquisição:</span> ${tire.dataAquisicao}</p>
+                        <p><span class="font-medium text-white">Fornecedor:</span> ${tire.fornecedor}</p>
+                        <p><span class="font-medium text-white">Número NF:</span> ${tire.numeroNF || 'N/A'}</p>
+                        <p><span class="font-medium text-white">Status Atual:</span> <span class="font-bold ${statusClass}">${tire.statusInicial}</span></p>
+                        <p><span class="font-medium text-white">Nº Recapagens:</span> ${tire.numeroRecapagens}</p>
+                        <p><span class="font-medium text-white">KM Total Percorrida:</span> ${parseFloat(tire.quilometragemTotalPercorrida || 0).toFixed(0)} km</p>
+                        <p><span class="font-medium text-white">Última Leitura Hodômetro:</span> ${parseFloat(tire.ultimaLeituraHodometroRegistrada || 0).toFixed(0)} km</p>
+                        <p><span class="font-medium text-white">Profundidade Sulco Atual:</span> ${tire.profundidadeSulcoAtual || 'N/A'} mm</p>
+                        ${tire.currentVehiclePlaca ? `<p class="col-span-2"><span class="font-medium text-white">Localização Atual:</span> ${tire.currentVehiclePlaca} - ${tire.currentAxle} ${tire.currentPosition}</p>` : ''}
                     </div>
                 </div>
             `;
@@ -1383,7 +1484,7 @@
 
             if (events.length === 0) {
                 tireEventsTimelineDiv.innerHTML = `
-                    <div class="text-center text-gray-600 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div class="text-center text-gray-400 p-4 border border-white/20 rounded-lg backdrop-blur-sm bg-white/5">
                         Nenhum evento registrado para este pneu ainda.
                     </div>
                 `;
@@ -1402,46 +1503,46 @@
 
                     if (event.tipo === 'Retorno da Recapagem') {
                         detailsHtml = `
-                            <div class="text-sm text-gray-600 mt-1 ml-2">
-                                <p>Custo: R$ ${parseFloat(details.custoRecapagem).toFixed(2)}</p>
-                                <p>Nova Profundidade Sulco: ${details.novaProfundidadeSulco} mm</p>
+                            <div class="text-sm text-gray-300 mt-1 ml-2">
+                                <p><span class="font-medium text-white">Custo:</span> R$ ${parseFloat(details.custoRecapagem).toFixed(2)}</p>
+                                <p><span class="font-medium text-white">Nova Profundidade Sulco:</span> ${details.novaProfundidadeSulco} mm</p>
                             </div>
                         `;
                     } else if (event.tipo === 'Descarte (Fim de Vida)') {
                         detailsHtml = `
-                            <div class="text-sm text-gray-600 mt-1 ml-2">
-                                <p>Motivo: ${details.motivoDescarte}</p>
+                            <div class="text-sm text-gray-300 mt-1 ml-2">
+                                <p><span class="font-medium text-white">Motivo:</span> ${details.motivoDescarte}</p>
                             </div>
                         `;
                     } else if (event.tipo === 'Registro de Quilometragem e Sulco') {
                         detailsHtml = `
-                            <div class="text-sm text-gray-600 mt-1 ml-2">
-                                <p>Hodômetro Veículo: ${parseFloat(details.quilometragemVeiculo).toFixed(0)} km</p>
-                                <p>Profundidade Sulco: ${details.profundidadeSulcoAtual} mm</p>
+                            <div class="text-sm text-gray-300 mt-1 ml-2">
+                                <p><span class="font-medium text-white">Hodômetro Veículo:</span> ${parseFloat(details.quilometragemVeiculo).toFixed(0)} km</p>
+                                <p><span class="font-medium text-white">Profundidade Sulco:</span> ${details.profundidadeSulcoAtual} mm</p>
                             </div>
                         `;
                     } else if (['Montagem em Veículo', 'Remoção de Veículo', 'Rodízio/Permutação', 'Rodízio/Permutação (Swap)'].includes(event.tipo)) {
                         detailsHtml = `
-                            <div class="text-sm text-gray-600 mt-1 ml-2">
-                                <p>Veículo: ${details.veiculoPlaca || 'N/A'}</p>
-                                <p>Eixo: ${details.eixo || 'N/A'}</p>
-                                <p>Posição: ${details.posicao || 'N/A'}</p>
-                                ${details.pneuPermutadoNumeroFogo ? `<p>Permutado com: ${details.pneuPermutadoNumeroFogo}</p>` : ''}
+                            <div class="text-sm text-gray-300 mt-1 ml-2">
+                                <p><span class="font-medium text-white">Veículo:</span> ${details.veiculoPlaca || 'N/A'}</p>
+                                <p><span class="font-medium text-white">Eixo:</span> ${details.eixo || 'N/A'}</p>
+                                <p><span class="font-medium text-white">Posição:</span> ${details.posicao || 'N/A'}</p>
+                                ${details.pneuPermutadoNumeroFogo ? `<p><span class="font-medium text-white">Permutado com:</span> ${details.pneuPermutadoNumeroFogo}</p>` : ''}
                             </div>
                         `;
                     }
                 }
 
                 return `
-                    <div class="mb-6 last:mb-0">
-                        <div class="absolute w-3 h-3 bg-blue-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                        <p class="text-xs text-gray-500">${formattedDate} - ${formattedTime}</p>
-                        <h4 class="font-semibold text-gray-900 text-base mt-0.5">${event.tipo}</h4>
-                        ${event.observacoes ? `<p class="text-gray-700 text-sm mt-1">${event.observacoes}</p>` : ''}
+                    <div class="mb-6 last:mb-0 backdrop-blur-sm bg-white/5 p-4 rounded-lg border border-white/10">
+                        <div class="absolute w-3 h-3 bg-blue-400 rounded-full mt-1.5 -left-1.5 border border-white/30"></div>
+                        <p class="text-xs text-gray-400">${formattedDate} - ${formattedTime}</p>
+                        <h4 class="font-semibold text-white text-base mt-0.5">${event.tipo}</h4>
+                        ${event.observacoes ? `<p class="text-gray-300 text-sm mt-1">${event.observacoes}</p>` : ''}
                         ${detailsHtml}
                         <div class="mt-2 flex justify-end">
                             <button data-event-id="${event.id}" data-action="delete"
-                                class="px-3 py-1 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition duration-200">
+                                class="px-3 py-1 bg-red-500/80 text-white rounded-full text-xs hover:bg-red-600/80 transition duration-200 backdrop-blur-sm">
                                 Excluir Evento
                             </button>
                         </div>
@@ -1467,7 +1568,7 @@
 
             if (vehiclesToRender.length === 0) {
                 vehicleTireVisualizationDiv.innerHTML = `
-                    <div class="text-center text-gray-600 p-4">
+                    <div class="text-center text-gray-400 p-4">
                         ${selectedVehicleId ? 'Veículo não encontrado ou sem pneus associados.' : 'Selecione um veículo para visualizar a distribuição dos pneus.'}
                     </div>
                 `;
@@ -1485,7 +1586,7 @@
                         const tireAtPosition = tiresOnAxle.find(t => t.currentPosition === position);
                         return `
                             <li class="flex items-center">
-                                <span class="w-2 h-2 rounded-full mr-2 ${tireAtPosition ? 'bg-blue-600' : 'bg-gray-400'}"></span>
+                                <span class="w-2 h-2 rounded-full mr-2 ${tireAtPosition ? 'bg-blue-600' : 'bg-gray-600'}"></span>
                                 ${position}: ${tireAtPosition ? `<span class="font-medium text-blue-700">${tireAtPosition.numeroFogo}</span>` : `<span class="text-gray-500">Vazio</span>`}
                             </li>
                         `;
@@ -1503,7 +1604,7 @@
 
                 return `
                     <div class="bg-gray-100 p-5 rounded-xl shadow-md border border-blue-300 mb-8">
-                        <h3 class="text-xl font-bold text-blue-800 mb-4">
+                        <h3 class="text-xl font-bold text-blue-200 mb-4">
                             Veículo: ${vehicle.placa} - ${vehicle.modelo} (${vehicle.ano})
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1852,19 +1953,42 @@
         // --- Search Functionality ---
         searchTireButton.addEventListener('click', () => {
             const searchTerm = searchTireInput.value.trim().toLowerCase();
+            currentTirePage = 1; // Reset to first page
             if (searchTerm) {
                 const filteredTires = tires.filter(tire =>
                     tire.numeroFogo.toLowerCase().includes(searchTerm)
                 );
-                renderTires(filteredTires);
+                renderTires(filteredTires, currentTirePage);
             } else {
-                renderTires(); // Show all tires if search term is empty
+                renderTires(tires, currentTirePage); // Show all tires if search term is empty
             }
         });
 
         clearSearchTireButton.addEventListener('click', () => {
             searchTireInput.value = '';
-            renderTires(); // Show all tires
+            currentTirePage = 1; // Reset to first page
+            renderTires(tires, currentTirePage); // Show all tires
+        });
+
+        // --- Vehicle Search Functionality ---
+        searchVehicleButton.addEventListener('click', () => {
+            const searchTerm = searchVehicleInput.value.trim().toLowerCase();
+            currentVehiclePage = 1; // Reset to first page
+            if (searchTerm) {
+                const filteredVehicles = vehicles.filter(vehicle =>
+                    vehicle.placa.toLowerCase().includes(searchTerm) ||
+                    vehicle.modelo.toLowerCase().includes(searchTerm)
+                );
+                renderVehicles(currentVehiclePage, filteredVehicles);
+            } else {
+                renderVehicles(currentVehiclePage, vehicles); // Show all vehicles if search term is empty
+            }
+        });
+
+        clearSearchVehicleButton.addEventListener('click', () => {
+            searchVehicleInput.value = '';
+            currentVehiclePage = 1; // Reset to first page
+            renderVehicles(currentVehiclePage, vehicles); // Show all vehicles
         });
 
         // --- Vehicle Visualization Select and Buttons ---
@@ -1879,7 +2003,7 @@
                 renderVehicleVisualization(selectedVehicleId);
             } else {
                 vehicleTireVisualizationDiv.innerHTML = `
-                    <div class="text-center text-gray-600 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
+                    <div class="text-center text-gray-400 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
                 `;
             }
         });
@@ -1889,7 +2013,7 @@
             viewVehicleVisualizationButton.disabled = true;
             clearVehicleSelectionButton.disabled = true;
             vehicleTireVisualizationDiv.innerHTML = `
-                <div class="text-center text-gray-600 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
+                <div class="text-center text-gray-400 p-4">Selecione um veículo para visualizar a distribuição dos pneus.</div>
             `;
         });
 
